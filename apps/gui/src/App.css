@@ -140,3 +140,145 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+/* Steps per mm calculator styles */
+.steps-per-mm-calculator {
+  margin-top: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.calculator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.calculator-toggle {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.calculator-toggle:hover {
+  background-color: #0056b3;
+}
+
+.calculated-preview {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 14px;
+}
+
+.calculator-panel {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 15px;
+}
+
+.drive-type-selector {
+  margin-bottom: 20px;
+}
+
+.drive-type-selector label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  font-weight: normal !important;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  margin-right: 6px;
+}
+
+.common-params,
+.drive-specific-params {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.common-params h4,
+.drive-specific-params h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.calculator-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.apply-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.apply-button:hover {
+  background-color: #218838;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-button:hover {
+  background-color: #545b62;
+}
+
+@media (prefers-color-scheme: dark) {
+  .steps-per-mm-calculator {
+    background-color: #3a3a3a;
+    border-color: #555;
+  }
+  
+  .common-params,
+  .drive-specific-params {
+    background-color: #2a2a2a;
+    border-color: #555;
+  }
+  
+  .calculator-panel {
+    border-color: #555;
+  }
+  
+  .calculator-actions {
+    border-color: #555;
+  }
+}
