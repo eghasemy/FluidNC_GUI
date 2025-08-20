@@ -1,0 +1,165 @@
+name: Seed FluidNC GUI Phases
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create milestones, labels, and issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // -------- Milestones (Phases)
+            const phases = [
+              { title: "P0 - Foundation" , description: "Repo scaffold, tooling, CI" },
+              { title: "P1 - Schema & YAML I/O", description: "Domain models, converters, validators" },
+              { title: "P2 - Wizard MVP", description: "Guided flow for 3-axis router" },
+              { title: "P3 - Expert Editor & Diff", description: "Tree editor + YAML diff + unknown key passthrough" },
+              { title: "P4 - Pin Mapper & Boards", description: "Board descriptors, pin capabilities, conflict detection" },
+              { title: "P5 - Spindles/IO/UART/Macros", description: "Advanced sections + speed map editor" },
+              { title: "P6 - On-Device Validation", description: "Serial/Wi-Fi console, upload, reboot, parse messages" },
+              { title: "P7 - Presets & Import", description: "Curated presets, robust import, comment-aware export" },
+              { title: "P8 - QA, Docs & Release", description: "E2E tests, docs, packaging" }
+            ];
+
+            const existingMilestones = await github.rest.issues.listMilestones({ owner, repo, state: 'all' });
+            const milestoneMap = {};
+            for (const p of phases) {
+              let m = existingMilestones.data.find(x => x.title === p.title);
+              if (!m) {
+                m = (await github.rest.issues.createMilestone({
+                  owner, repo, title: p.title, description: p.description
+                })).data;
+              }
+              milestoneMap[p.title] = m.number;
+            }
+
+            // -------- Labels
+            const labels = [
+              { name: "type:feature", color: "0E8A16", description: "New capability" },
+              { name: "type:task",    color: "C2E0C6", description: "Implementation task" },
+              { name: "type:docs",    color: "5319E7", description: "Documentation" },
+              { name: "good-first-issue", color: "7057FF", description: "Starter issue" },
+              { name: "area:app",       color: "1D76DB", description: "GUI application" },
+              { name: "area:schema",    color: "D93F0B", description: "Domain models / validators" },
+              { name: "area:pin-mapper",color: "BFD4F2", description: "Pin mapping subsystem" },
+              { name: "area:spindle",   color: "D4C5F9", description: "Spindles / speed maps" },
+              { name: "area:io",        color: "BFDADC", description: "IO / coolant / control / UART" },
+              { name: "area:device",    color: "E99695", description: "Serial/Wi-Fi device integration" },
+              { name: "area:presets",   color: "CC317C", description: "Board & machine presets" },
+              { name: "area:docs",      color: "0B3A1E", description: "Documentation site" },
+              { name: "phase:P0", color: "BFD4F2", description: "Foundation" },
+              { name: "phase:P1", color: "BFD4F2", description: "Schema & YAML I/O" },
+              { name: "phase:P2", color: "BFD4F2", description: "Wizard MVP" },
+              { name: "phase:P3", color: "BFD4F2", description: "Expert Editor & Diff" },
+              { name: "phase:P4", color: "BFD4F2", description: "Pin Mapper & Boards" },
+              { name: "phase:P5", color: "BFD4F2", description: "Spindles/IO/UART/Macros" },
+              { name: "phase:P6", color: "BFD4F2", description: "On-Device Validation" },
+              { name: "phase:P7", color: "BFD4F2", description: "Presets & Import" },
+              { name: "phase:P8", color: "BFD4F2", description: "QA, Docs & Release" }
+            ];
+
+            for (const l of labels) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: l.name });
+              } catch {
+                await github.rest.issues.createLabel({ owner, repo, name: l.name, color: l.color, description: l.description });
+              }
+            }
+
+            // -------- Issue seeds (titles + bodies)
+            const issues = [
+              // P0
+              { t: "[P0] Scaffold Tauri + React + TypeScript", m: "P0 - Foundation", labels: ["phase:P0","type:task","area:app"],
+                b: "- Create monorepo with `apps/gui`, `packages/core`, `packages/presets`\n- Add PNPM/Yarn, ESLint, Prettier, TS strict\n- Build and run a blank window\n\n**Done when**: CI builds the GUI app artifact." },
+              { t: "[P0] CI: lint, typecheck, unit tests, build", m: "P0 - Foundation", labels: ["phase:P0","type:task","area:app"],
+                b: "- GitHub Actions job(s) for lint/ts/test/build\n- Cache deps\n\n**Done when**: All checks are required and green." },
+              { t: "[P0] Changesets + versioning for packages", m: "P0 - Foundation", labels: ["phase:P0","type:task","area:app"],
+                b: "- Configure Changesets\n\n**Done when**: `changeset` command proposes correct bumps." },
+
+              // P1
+              { t: "[P1] Domain schema (Zod) for FluidNC config", m: "P1 - Schema & YAML I/O", labels: ["phase:P1","type:feature","area:schema"],
+                b: "- Top-level, axes/motors, homing/limits, spindles, IO, UART, macros, control\n\n**Done when**: Types compile and unit tests cover happy/error paths." },
+              { t: "[P1] YAML ⇄ Model converters with passthrough", m: "P1 - Schema & YAML I/O", labels: ["phase:P1","type:feature","area:schema"],
+                b: "- Preserve unknown keys\n\n**Done when**: Round-trip test maintains unknown keys." },
+              { t: "[P1] Computed helpers & validators (steps/mm…)", m: "P1 - Schema & YAML I/O", labels: ["phase:P1","type:task","area:schema"],
+                b: "- Steps/mm calculator\n- Cross-field validation hooks\n\n**Done when**: Unit tests enforce rules." },
+
+              // P2
+              { t: "[P2] Wizard skeleton and navigation guard", m: "P2 - Wizard MVP", labels: ["phase:P2","type:feature","area:app"],
+                b: "- Cards: Machine → Mechanics → Motors → Homing → Spindle → IO → Review\n\n**Done when**: Cannot advance with invalid state." },
+              { t: "[P2] Steps/mm calculator UI", m: "P2 - Wizard MVP", labels: ["phase:P2","type:task","area:app"],
+                b: "- Belt/leadscrew templates\n\n**Done when**: Values propagate to the model." },
+              { t: "[P2] YAML preview in Wizard Review step", m: "P2 - Wizard MVP", labels: ["phase:P2","type:task","area:app"],
+                b: "- Live YAML render\n\n**Done when**: Preview mirrors form edits." },
+
+              // P3
+              { t: "[P3] Expert editor tree + forms", m: "P3 - Expert Editor & Diff", labels: ["phase:P3","type:feature","area:app"],
+                b: "- Schema-driven forms\n\n**Done when**: Any key is editable in expert mode." },
+              { t: "[P3] YAML diff viewer (AST aware)", m: "P3 - Expert Editor & Diff", labels: ["phase:P3","type:feature","area:app"],
+                b: "- Show before/after\n\n**Done when**: Diffs stay stable across minor form changes." },
+
+              // P4
+              { t: "[P4] Board descriptor spec + loader", m: "P4 - Pin Mapper & Boards", labels: ["phase:P4","type:feature","area:pin-mapper"],
+                b: "- JSON: pins, capabilities, notes\n\n**Done when**: Descriptors validate and load." },
+              { t: "[P4] Pin mapper UI + conflict detection", m: "P4 - Pin Mapper & Boards", labels: ["phase:P4","type:feature","area:pin-mapper"],
+                b: "- Visual free/used/invalid\n\n**Done when**: Invalid assignments are blocked." },
+              { t: "[P4] Seed boards: BDRing 6x, V1 Jackpot", m: "P4 - Pin Mapper & Boards", labels: ["phase:P4","type:task","area:pin-mapper","area:presets"],
+                b: "- Add descriptor JSON with attribution\n\n**Done when**: Users can pick these boards in the UI." },
+
+              // P5
+              { t: "[P5] Multi-spindle UI + speed map editor", m: "P5 - Spindles/IO/UART/Macros", labels: ["phase:P5","type:feature","area:spindle"],
+                b: "- Relay/PWM/DAC/RS485\n- Enforce monotonic map\n\n**Done when**: Exported map validates." },
+              { t: "[P5] IO & user outputs; coolant; control inputs", m: "P5 - Spindles/IO/UART/Macros", labels: ["phase:P5","type:feature","area:io"],
+                b: "- Digital/PWM outputs, mist/flood, feed-hold, etc.\n\n**Done when**: Example configs pass validation." },
+              { t: "[P5] UART & SD; Macros editor", m: "P5 - Spindles/IO/UART/Macros", labels: ["phase:P5","type:task","area:io"],
+                b: "- UART/SD sections; macros section editor\n\n**Done when**: Round-trip preserves macro bodies." },
+
+              // P6
+              { t: "[P6] Serial connector (Tauri) + console stream", m: "P6 - On-Device Validation", labels: ["phase:P6","type:feature","area:device"],
+                b: "- Open/close, read/write, error handling\n\n**Done when**: Console stream visible in UI." },
+              { t: "[P6] Wi-Fi console connector", m: "P6 - On-Device Validation", labels: ["phase:P6","type:feature","area:device"],
+                b: "- TCP/WebSocket as supported\n\n**Done when**: Same UX as serial." },
+              { t: "[P6] On-device validation pipeline", m: "P6 - On-Device Validation", labels: ["phase:P6","type:feature","area:device"],
+                b: "- Upload file, set `$Config/Filename`, soft reset, parse `MSG:ERR/WARN`\n\n**Done when**: UI shows pass/warn/fail." },
+
+              // P7
+              { t: "[P7] Presets library (router/laser/plasma/rotary)", m: "P7 - Presets & Import", labels: ["phase:P7","type:feature","area:presets"],
+                b: "- Curated examples with attribution\n\n**Done when**: Preset → export works out of the box." },
+              { t: "[P7] Robust import + mapping hints", m: "P7 - Presets & Import", labels: ["phase:P7","type:task","area:presets"],
+                b: "- Gentle errors, suggestions\n\n**Done when**: Common legacy configs import cleanly." },
+              { t: "[P7] Comment-aware export (best effort)", m: "P7 - Presets & Import", labels: ["phase:P7","type:task","area:presets"],
+                b: "- Preserve/attach helpful comments\n\n**Done when**: Export keeps template notes where feasible." },
+
+              // P8
+              { t: "[P8] Playwright E2E coverage", m: "P8 - QA, Docs & Release", labels: ["phase:P8","type:task","area:app"],
+                b: "- Wizard → export; import → expert → export; device-check mock\n\n**Done when**: E2E suite stable in CI." },
+              { t: "[P8] Docs site (Getting Started, Recipes, Troubleshooting)", m: "P8 - QA, Docs & Release", labels: ["phase:P8","type:docs","area:docs"],
+                b: "- MDX or Docusaurus\n\n**Done when**: New user can produce a config in < 10 minutes following docs." },
+              { t: "[P8] Release packaging", m: "P8 - QA, Docs & Release", labels: ["phase:P8","type:task","area:app"],
+                b: "- Build artifacts for Win/macOS/Linux; publish instructions\n\n**Done when**: Tagged release produces installers." }
+            ];
+
+            // Create issues if they don't already exist (title match)
+            for (const i of issues) {
+              const q = `repo:${owner}/${repo} in:title "${i.t.replace(/"/g, '\\"')}" type:issue`;
+              const found = await github.rest.search.issuesAndPullRequests({ q });
+              if (found.data.total_count === 0) {
+                await github.rest.issues.create({
+                  owner, repo,
+                  title: i.t,
+                  body: i.b,
+                  labels: i.labels,
+                  milestone: milestoneMap[i.m]
+                });
+              }
+            }
