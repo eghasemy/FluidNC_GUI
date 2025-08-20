@@ -11,7 +11,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -26,5 +28,13 @@
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
   },
-  "keywords": ["fluidnc", "cnc", "configuration", "yaml"]
+  "keywords": [
+    "fluidnc",
+    "cnc",
+    "configuration",
+    "yaml"
+  ],
+  "dependencies": {
+    "zod": "^4.0.17"
+  }
 }
