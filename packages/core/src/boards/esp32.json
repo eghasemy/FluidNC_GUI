@@ -1,0 +1,355 @@
+{
+  "id": "esp32",
+  "name": "ESP32",
+  "description": "ESP32 WROOM-32 development board with WiFi and Bluetooth",
+  "version": "1.0",
+  "manufacturer": "Espressif",
+  "capabilities": {
+    "uart_channels": 3,
+    "spi_channels": 4,
+    "i2c_channels": 2,
+    "adc_channels": 18,
+    "dac_channels": 2,
+    "pwm_channels": 16,
+    "touch_pins": 10,
+    "flash_size": "4MB",
+    "ram_size": "520KB",
+    "cpu_frequency": "240MHz",
+    "wifi": true,
+    "bluetooth": true,
+    "ethernet": false,
+    "notes": "Classic ESP32 with dual-core processor and extensive peripheral support"
+  },
+  "pins": [
+    {
+      "name": "GPIO0",
+      "gpio": 0,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "notes": "Boot mode selection pin, pulled up internally"
+      }
+    },
+    {
+      "name": "GPIO1",
+      "gpio": 1,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "notes": "UART0 TX, typically used for programming/debugging"
+      }
+    },
+    {
+      "name": "GPIO2",
+      "gpio": 2,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Must be low during boot if 12V flash is used"
+      }
+    },
+    {
+      "name": "GPIO3",
+      "gpio": 3,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "notes": "UART0 RX, typically used for programming/debugging"
+      }
+    },
+    {
+      "name": "GPIO4",
+      "gpio": 4,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH0, can be used as analog input"
+      }
+    },
+    {
+      "name": "GPIO5",
+      "gpio": 5,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, no special boot requirements"
+      }
+    },
+    {
+      "name": "GPIO12",
+      "gpio": 12,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH5, must be low during boot if 3.3V flash is used"
+      }
+    },
+    {
+      "name": "GPIO13",
+      "gpio": 13,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH4, safe to use"
+      }
+    },
+    {
+      "name": "GPIO14",
+      "gpio": 14,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH6, safe to use"
+      }
+    },
+    {
+      "name": "GPIO15",
+      "gpio": 15,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH3, outputs PWM signal at boot"
+      }
+    },
+    {
+      "name": "GPIO16",
+      "gpio": 16,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, no ADC function"
+      }
+    },
+    {
+      "name": "GPIO17",
+      "gpio": 17,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, no ADC function"
+      }
+    },
+    {
+      "name": "GPIO18",
+      "gpio": 18,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, commonly used for SPI SCK"
+      }
+    },
+    {
+      "name": "GPIO19",
+      "gpio": 19,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, commonly used for SPI MISO"
+      }
+    },
+    {
+      "name": "GPIO21",
+      "gpio": 21,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, commonly used for I2C SDA"
+      }
+    },
+    {
+      "name": "GPIO22",
+      "gpio": 22,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, commonly used for I2C SCL"
+      }
+    },
+    {
+      "name": "GPIO23",
+      "gpio": 23,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, commonly used for SPI MOSI"
+      }
+    },
+    {
+      "name": "GPIO25",
+      "gpio": 25,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH8, DAC1 output"
+      }
+    },
+    {
+      "name": "GPIO26",
+      "gpio": 26,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH9, DAC2 output"
+      }
+    },
+    {
+      "name": "GPIO27",
+      "gpio": 27,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH7, safe to use"
+      }
+    },
+    {
+      "name": "GPIO32",
+      "gpio": 32,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH4, can be used for analog input"
+      }
+    },
+    {
+      "name": "GPIO33",
+      "gpio": 33,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH5, can be used for analog input"
+      }
+    },
+    {
+      "name": "GPIO34",
+      "gpio": 34,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "ADC1_CH6, input only, no pullup/pulldown"
+      }
+    },
+    {
+      "name": "GPIO35",
+      "gpio": 35,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "ADC1_CH7, input only, no pullup/pulldown"
+      }
+    },
+    {
+      "name": "GPIO36",
+      "gpio": 36,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "ADC1_CH0, input only, no pullup/pulldown, VP sensor"
+      }
+    },
+    {
+      "name": "GPIO39",
+      "gpio": 39,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "ADC1_CH3, input only, no pullup/pulldown, VN sensor"
+      }
+    }
+  ],
+  "notes": "ESP32 is the most common and well-supported board. GPIO6-11 are used for flash memory and should not be used. Some pins have special boot requirements."
+}

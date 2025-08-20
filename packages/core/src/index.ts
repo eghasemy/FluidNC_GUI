@@ -144,6 +144,55 @@ export interface ControlConfig {
 }
 
 // =============================================================================
+// Board Descriptor Interfaces
+// =============================================================================
+
+export interface PinCapability {
+  digital?: boolean;
+  analog?: boolean;
+  pwm?: boolean;
+  input?: boolean;
+  output?: boolean;
+  pullup?: boolean;
+  pulldown?: boolean;
+  notes?: string;
+}
+
+export interface BoardPin {
+  name: string;
+  gpio: number;
+  capabilities: PinCapability;
+}
+
+export interface BoardCapabilities {
+  uart_channels?: number;
+  spi_channels?: number;
+  i2c_channels?: number;
+  adc_channels?: number;
+  dac_channels?: number;
+  pwm_channels?: number;
+  touch_pins?: number;
+  flash_size?: string;
+  ram_size?: string;
+  cpu_frequency?: string;
+  wifi?: boolean;
+  bluetooth?: boolean;
+  ethernet?: boolean;
+  notes?: string;
+}
+
+export interface BoardDescriptor {
+  id: string;
+  name: string;
+  description?: string;
+  pins: BoardPin[];
+  capabilities: BoardCapabilities;
+  notes?: string;
+  version?: string;
+  manufacturer?: string;
+}
+
+// =============================================================================
 // Zod Schemas
 // =============================================================================
 
@@ -272,6 +321,55 @@ export const FluidNCConfigSchema = z.object({
   uart: UARTConfigSchema.optional(),
   macros: MacrosConfigSchema.optional(),
   control: ControlConfigSchema.optional(),
+}).catchall(z.unknown());
+
+// =============================================================================
+// Board Descriptor Schemas
+// =============================================================================
+
+export const PinCapabilitySchema = z.object({
+  digital: z.boolean().optional(),
+  analog: z.boolean().optional(),
+  pwm: z.boolean().optional(),
+  input: z.boolean().optional(),
+  output: z.boolean().optional(),
+  pullup: z.boolean().optional(),
+  pulldown: z.boolean().optional(),
+  notes: z.string().optional(),
+}).catchall(z.unknown());
+
+export const BoardPinSchema = z.object({
+  name: z.string(),
+  gpio: z.number().int().nonnegative(),
+  capabilities: PinCapabilitySchema,
+}).catchall(z.unknown());
+
+export const BoardCapabilitiesSchema = z.object({
+  uart_channels: z.number().int().nonnegative().optional(),
+  spi_channels: z.number().int().nonnegative().optional(),
+  i2c_channels: z.number().int().nonnegative().optional(),
+  adc_channels: z.number().int().nonnegative().optional(),
+  dac_channels: z.number().int().nonnegative().optional(),
+  pwm_channels: z.number().int().nonnegative().optional(),
+  touch_pins: z.number().int().nonnegative().optional(),
+  flash_size: z.string().optional(),
+  ram_size: z.string().optional(),
+  cpu_frequency: z.string().optional(),
+  wifi: z.boolean().optional(),
+  bluetooth: z.boolean().optional(),
+  ethernet: z.boolean().optional(),
+  notes: z.string().optional(),
+}).catchall(z.unknown());
+
+export const BoardDescriptorSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  pins: z.array(BoardPinSchema),
+  capabilities: BoardCapabilitiesSchema,
+  notes: z.string().optional(),
+  version: z.string().optional(),
+  manufacturer: z.string().optional(),
 }).catchall(z.unknown());
 
 // =============================================================================
@@ -606,7 +704,46 @@ export function fromYAML(yamlString: string): { success: true; data: z.infer<typ
 }
 
 // =============================================================================
+// Board Descriptor Validation and Loading
+// =============================================================================
+
+export function validateBoardDescriptor(descriptor: unknown): { success: true; data: z.infer<typeof BoardDescriptorSchema> } | { success: false; errors: z.ZodError } {
+  const result = BoardDescriptorSchema.safeParse(descriptor);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, errors: result.error };
+}
+
+export function loadBoardDescriptor(jsonString: string): { success: true; data: z.infer<typeof BoardDescriptorSchema> } | { success: false; errors: z.ZodError } {
+  try {
+    const parsed = JSON.parse(jsonString);
+    return validateBoardDescriptor(parsed);
+  } catch (error) {
+    // Create a ZodError for JSON parsing errors
+    const zodError = new z.ZodError([
+      {
+        code: 'custom',
+        message: `JSON parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        path: [],
+      },
+    ]);
+    return { success: false, errors: zodError };
+  }
+}
+
+export function loadBoardDescriptorFromObject(descriptor: unknown): { success: true; data: z.infer<typeof BoardDescriptorSchema> } | { success: false; errors: z.ZodError } {
+  return validateBoardDescriptor(descriptor);
+}
+
+// =============================================================================
 // Configuration Diff Utilities
 // =============================================================================
 
 export * from './diff';
+
+// =============================================================================
+// Board Descriptors
+// =============================================================================
+
+export * from './boards';

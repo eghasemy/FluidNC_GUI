@@ -1,0 +1,226 @@
+{
+  "id": "esp32-c3",
+  "name": "ESP32-C3",
+  "description": "ESP32-C3 RISC-V development board with WiFi and Bluetooth LE",
+  "version": "1.0",
+  "manufacturer": "Espressif",
+  "capabilities": {
+    "uart_channels": 2,
+    "spi_channels": 3,
+    "i2c_channels": 1,
+    "adc_channels": 6,
+    "dac_channels": 0,
+    "pwm_channels": 6,
+    "touch_pins": 0,
+    "flash_size": "4MB",
+    "ram_size": "400KB",
+    "cpu_frequency": "160MHz",
+    "wifi": true,
+    "bluetooth": true,
+    "ethernet": false,
+    "notes": "Single-core RISC-V ESP32-C3 with WiFi and Bluetooth LE, cost-effective solution"
+  },
+  "pins": [
+    {
+      "name": "GPIO0",
+      "gpio": 0,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "analog": true,
+        "notes": "ADC1_CH0, boot mode selection pin"
+      }
+    },
+    {
+      "name": "GPIO1",
+      "gpio": 1,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH1, safe to use"
+      }
+    },
+    {
+      "name": "GPIO2",
+      "gpio": 2,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH2, boot strapping pin"
+      }
+    },
+    {
+      "name": "GPIO3",
+      "gpio": 3,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH3, safe to use"
+      }
+    },
+    {
+      "name": "GPIO4",
+      "gpio": 4,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH4, safe to use"
+      }
+    },
+    {
+      "name": "GPIO5",
+      "gpio": 5,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH0, safe to use"
+      }
+    },
+    {
+      "name": "GPIO6",
+      "gpio": 6,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO7",
+      "gpio": 7,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO8",
+      "gpio": 8,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Boot strapping pin, needs pull-up"
+      }
+    },
+    {
+      "name": "GPIO9",
+      "gpio": 9,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Boot strapping pin, needs pull-up"
+      }
+    },
+    {
+      "name": "GPIO10",
+      "gpio": 10,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO18",
+      "gpio": 18,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, USB D-"
+      }
+    },
+    {
+      "name": "GPIO19",
+      "gpio": 19,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use, USB D+"
+      }
+    },
+    {
+      "name": "GPIO20",
+      "gpio": 20,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "UART0 RX, typically used for programming"
+      }
+    },
+    {
+      "name": "GPIO21",
+      "gpio": 21,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "UART0 TX, typically used for programming"
+      }
+    }
+  ],
+  "notes": "ESP32-C3 is a cost-effective RISC-V single-core solution with WiFi and Bluetooth LE. Limited number of GPIO pins compared to other ESP32 variants."
+}
