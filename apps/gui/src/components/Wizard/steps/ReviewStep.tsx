@@ -13,8 +13,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   const [errors, setErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [yamlConfig, setYamlConfig] = useState<string>('');
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const validateStep = () => {
+    setIsUpdating(true);
     const newErrors: string[] = [];
     const newWarnings: string[] = [];
     
@@ -68,6 +71,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     try {
       const yaml = toYAML(validation.success ? validation.data : config);
       setYamlConfig(yaml);
+      setLastUpdated(new Date());
     } catch (error) {
       newErrors.push('Failed to generate YAML configuration');
       setYamlConfig('Error generating configuration');
@@ -75,6 +79,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
     setErrors(newErrors);
     setWarnings(newWarnings);
+    setIsUpdating(false);
     
     const isValid = newErrors.length === 0;
     onValidationChange(isValid);
@@ -185,6 +190,14 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
         <h3>Generated Configuration</h3>
         <p>This is your complete FluidNC YAML configuration file:</p>
         
+        <div className="config-status">
+          {isUpdating ? (
+            <span className="status-updating">🔄 Updating preview...</span>
+          ) : (
+            <span className="status-live">✅ Live preview (updated {lastUpdated.toLocaleTimeString()})</span>
+          )}
+        </div>
+        
         <div className="config-actions">
           <button 
             type="button" 
@@ -202,7 +215,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </button>
         </div>
 
-        <pre className="config-preview">
+        <pre className={`config-preview ${isUpdating ? 'updating' : ''}`}>
           <code>{yamlConfig}</code>
         </pre>
       </div>
