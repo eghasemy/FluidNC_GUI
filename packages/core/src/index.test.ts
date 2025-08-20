@@ -53,7 +53,6 @@ import {
   extractAllPinAssignments,
   getPinStatus,
   getPinConflicts,
-  isValidPinAssignment,
 } from './index';
 
 describe('TMCConfigSchema', () => {
@@ -2018,6 +2017,23 @@ describe('Board Descriptor Tests', () => {
       expect(BOARD_DESCRIPTORS['esp32-s2']).toBeDefined();
       expect(BOARD_DESCRIPTORS['esp32-s3']).toBeDefined();
       expect(BOARD_DESCRIPTORS['esp32-c3']).toBeDefined();
+      expect(BOARD_DESCRIPTORS['bdring-6x']).toBeDefined();
+      expect(BOARD_DESCRIPTORS['v1-jackpot']).toBeDefined();
+      expect(BOARD_DESCRIPTORS['pibot-49b-plus']).toBeDefined();
+    });
+
+    it('should have correct number of boards available', () => {
+      const boardIds = getBoardIds();
+      expect(boardIds).toHaveLength(7); // 4 ESP32 variants + 3 CNC controller boards
+      
+      const allBoards = getAllBoardDescriptors();
+      expect(allBoards).toHaveLength(7);
+    });
+
+    it('should find new CNC boards by name', () => {
+      expect(findBoardByName('BDRing 6-Pack TMC2209')).toBeDefined();
+      expect(findBoardByName('V1 Engineering Jackpot')).toBeDefined();
+      expect(findBoardByName('PiBot 4.9b Plus')).toBeDefined();
     });
   });
 });

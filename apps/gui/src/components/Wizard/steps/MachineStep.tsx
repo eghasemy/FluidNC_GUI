@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FluidNCConfig, validateFluidNCConfig } from '@fluidnc-gui/core';
+import { FluidNCConfig, validateFluidNCConfig, getAllBoardDescriptors } from '@fluidnc-gui/core';
 
 interface MachineStepProps {
   config: FluidNCConfig;
@@ -51,10 +51,10 @@ export const MachineStep: React.FC<MachineStepProps> = ({
 
   const boardOptions = [
     { value: '', label: 'Select Board Type' },
-    { value: 'ESP32', label: 'ESP32' },
-    { value: 'ESP32-S2', label: 'ESP32-S2' },
-    { value: 'ESP32-S3', label: 'ESP32-S3' },
-    { value: 'ESP32-C3', label: 'ESP32-C3' },
+    ...getAllBoardDescriptors().map(board => ({
+      value: board.id,
+      label: `${board.name} - ${board.manufacturer || 'Unknown'}`
+    }))
   ];
 
   return (
@@ -107,7 +107,7 @@ export const MachineStep: React.FC<MachineStepProps> = ({
             ))}
           </select>
           <div className="help-text">
-            Select the ESP32 board variant you are using
+            Select the controller board you are using for your CNC machine
           </div>
         </div>
       </div>
