@@ -136,6 +136,22 @@ export const SpindleStep: React.FC<SpindleStepProps> = ({
           
           <div className="form-row">
             <div className="form-group">
+              <label>Spindle Type *</label>
+              <select
+                value={config.spindle?.type || 'PWM'}
+                onChange={(e) => handleSpindleConfigChange('type', e.target.value as SpindleType)}
+              >
+                <option value="PWM">PWM (Variable Speed)</option>
+                <option value="Relay">Relay (On/Off)</option>
+                <option value="DAC">DAC (Analog)</option>
+                <option value="RS485">RS485 (Modbus)</option>
+              </select>
+              <div className="help-text">
+                Select the type of spindle control interface
+              </div>
+            </div>
+
+            <div className="form-group">
               <label>Output Pin *</label>
               <input
                 type="text"
@@ -144,27 +160,33 @@ export const SpindleStep: React.FC<SpindleStepProps> = ({
                 placeholder="gpio.25"
               />
               <div className="help-text">
-                GPIO pin for PWM speed control signal
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>PWM Frequency (Hz)</label>
-              <input
-                type="number"
-                step="100"
-                min="1"
-                value={config.spindle?.pwm_hz || ''}
-                onChange={(e) => 
-                  handleSpindleConfigChange('pwm_hz', parseInt(e.target.value) || 0)
-                }
-                placeholder="1000"
-              />
-              <div className="help-text">
-                PWM frequency for speed control (typically 1000Hz)
+                GPIO pin for {config.spindle?.type === 'PWM' ? 'PWM speed control signal' : 
+                            config.spindle?.type === 'Relay' ? 'relay control' :
+                            config.spindle?.type === 'DAC' ? 'DAC output' : 'RS485 communication'}
               </div>
             </div>
           </div>
+
+          {config.spindle?.type === 'PWM' && (
+            <div className="form-row">
+              <div className="form-group">
+                <label>PWM Frequency (Hz)</label>
+                <input
+                  type="number"
+                  step="100"
+                  min="1"
+                  value={config.spindle?.pwm_hz || ''}
+                  onChange={(e) => 
+                    handleSpindleConfigChange('pwm_hz', parseInt(e.target.value) || 0)
+                  }
+                  placeholder="1000"
+                />
+                <div className="help-text">
+                  PWM frequency for speed control (typically 1000Hz)
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">
@@ -263,18 +285,10 @@ export const SpindleStep: React.FC<SpindleStepProps> = ({
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Speed Map</label>
-            <textarea
-              rows={3}
-              value={config.spindle?.speed_map || ''}
-              onChange={(e) => handleSpindleConfigChange('speed_map', e.target.value)}
-              placeholder="0=0% 1000=100%"
-            />
-            <div className="help-text">
-              Speed mapping configuration (optional). Format: RPM=PWM% pairs separated by spaces
-            </div>
-          </div>
+          <SpeedMapEditor
+            value={config.spindle?.speed_map || ''}
+            onChange={(value) => handleSpindleConfigChange('speed_map', value)}
+          />
 
           <div className="spindle-info">
             <h4>Spindle Control Information</h4>
