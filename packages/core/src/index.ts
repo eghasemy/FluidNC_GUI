@@ -83,7 +83,10 @@ export interface TMCConfig {
   [key: string]: unknown;
 }
 
+export type SpindleType = 'PWM' | 'Relay' | 'DAC' | 'RS485';
+
 export interface SpindleConfig {
+  type?: SpindleType;
   pwm_hz?: number;
   output_pin?: string;
   enable_pin?: string;
@@ -257,6 +260,7 @@ export const AxisConfigSchema = z.object({
 }).catchall(z.unknown());
 
 export const SpindleConfigSchema = z.object({
+  type: z.enum(['PWM', 'Relay', 'DAC', 'RS485']).optional(),
   pwm_hz: z.number().int().positive().optional(),
   output_pin: z.string().optional(),
   enable_pin: z.string().optional(),
@@ -663,6 +667,116 @@ export function validateAxisConfiguration(context: AxisValidationContext): { val
   }
   
   return { valid: allValid, messages };
+}
+
+// =============================================================================
+// Speed Map Validation
+// =============================================================================
+
+export interface SpeedMapEntry {
+  rpm: number;
+  pwm: number;
+}
+
+/**
+ * Parses a speed map string into an array of SpeedMapEntry objects
+ * Format: "RPM=PWM% pairs" e.g., "0=0% 1000=50% 2000=100%"
+ */
+export function parseSpeedMap(speedMap: string): { success: true; entries: SpeedMapEntry[] } | { success: false; error: string } {
+  if (!speedMap || speedMap.trim() === '') {
+    return { success: true, entries: [] };
+  }
+
+  const entries: SpeedMapEntry[] = [];
+  const pairs = speedMap.trim().split(/\s+/);
+
+  for (const pair of pairs) {
+    const match = pair.match(/^(-?\d+(?:\.\d+)?)=(-?\d+(?:\.\d+)?)%?$/);
+    if (!match || !match[1] || !match[2]) {
+      return { success: false, error: `Invalid speed map entry: "${pair}". Expected format: "RPM=PWM%" (e.g., "1000=50%")` };
+    }
+
+    const rpm = parseFloat(match[1]);
+    const pwm = parseFloat(match[2]);
+
+    if (isNaN(rpm) || isNaN(pwm)) {
+      return { success: false, error: `Invalid numbers in speed map entry: "${pair}"` };
+    }
+
+    if (rpm < 0) {
+      return { success: false, error: `RPM cannot be negative in entry: "${pair}"` };
+    }
+
+    if (pwm < 0 || pwm > 100) {
+      return { success: false, error: `PWM percentage must be between 0 and 100 in entry: "${pair}"` };
+    }
+
+    entries.push({ rpm, pwm });
+  }
+
+  return { success: true, entries };
+}
+
+/**
+ * Validates that a speed map is monotonic (RPM values increase with PWM values)
+ */
+export function validateSpeedMapMonotonic(entries: SpeedMapEntry[]): { valid: true } | { valid: false; error: string } {
+  if (entries.length <= 1) {
+    return { valid: true };
+  }
+
+  // Sort by RPM to check monotonic property
+  const sortedByRpm = [...entries].sort((a, b) => a.rpm - b.rpm);
+  
+  // Check for duplicate RPM values
+  for (let i = 1; i < sortedByRpm.length; i++) {
+    const current = sortedByRpm[i];
+    const previous = sortedByRpm[i - 1];
+    if (current && previous && current.rpm === previous.rpm) {
+      return { valid: false, error: `Duplicate RPM value found: ${current.rpm}` };
+    }
+  }
+
+  // Check that PWM values are monotonic (non-decreasing) with RPM
+  for (let i = 1; i < sortedByRpm.length; i++) {
+    const current = sortedByRpm[i];
+    const previous = sortedByRpm[i - 1];
+    if (current && previous && current.pwm < previous.pwm) {
+      return { 
+        valid: false, 
+        error: `Speed map is not monotonic: RPM ${current.rpm} has PWM ${current.pwm}% which is less than RPM ${previous.rpm} with PWM ${previous.pwm}%` 
+      };
+    }
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validates a complete speed map string
+ */
+export function validateSpeedMap(speedMap: string): { valid: true; entries: SpeedMapEntry[] } | { valid: false; error: string } {
+  const parseResult = parseSpeedMap(speedMap);
+  if (!parseResult.success) {
+    return { valid: false, error: parseResult.error };
+  }
+
+  const monotonicResult = validateSpeedMapMonotonic(parseResult.entries);
+  if (!monotonicResult.valid) {
+    return { valid: false, error: monotonicResult.error };
+  }
+
+  return { valid: true, entries: parseResult.entries };
+}
+
+/**
+ * Formats speed map entries back to string format
+ */
+export function formatSpeedMap(entries: SpeedMapEntry[]): string {
+  return entries
+    .sort((a, b) => a.rpm - b.rpm)
+    .map(entry => `${entry.rpm}=${entry.pwm}%`)
+    .join(' ');
 }
 
 // =============================================================================

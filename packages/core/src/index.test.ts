@@ -44,6 +44,12 @@ import {
   validateHomingRates,
   validateAxisConfiguration,
   AxisValidationContext,
+  // Speed Map functions
+  parseSpeedMap,
+  validateSpeedMapMonotonic,
+  validateSpeedMap,
+  formatSpeedMap,
+  SpeedMapEntry,
   // Diff functions
   diffConfigurations,
   formatValue,
@@ -282,6 +288,236 @@ describe('SpindleConfigSchema', () => {
 
     const result = SpindleConfigSchema.safeParse(invalidSpindle);
     expect(result.success).toBe(false);
+  });
+
+  it('should validate spindle with type', () => {
+    const validSpindle = {
+      type: 'PWM',
+      pwm_hz: 1000,
+      output_pin: 'gpio.1',
+    };
+
+    const result = SpindleConfigSchema.safeParse(validSpindle);
+    expect(result.success).toBe(true);
+  });
+
+  it('should accept all valid spindle types', () => {
+    const types = ['PWM', 'Relay', 'DAC', 'RS485'];
+    for (const type of types) {
+      const validSpindle = { type, output_pin: 'gpio.1' };
+      const result = SpindleConfigSchema.safeParse(validSpindle);
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it('should reject invalid spindle type', () => {
+    const invalidSpindle = {
+      type: 'INVALID_TYPE',
+      output_pin: 'gpio.1',
+    };
+
+    const result = SpindleConfigSchema.safeParse(invalidSpindle);
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('Speed Map Validation', () => {
+  describe('parseSpeedMap', () => {
+    it('should parse empty speed map', () => {
+      const result = parseSpeedMap('');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.entries).toEqual([]);
+      }
+    });
+
+    it('should parse single speed map entry', () => {
+      const result = parseSpeedMap('1000=50%');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.entries).toEqual([{ rpm: 1000, pwm: 50 }]);
+      }
+    });
+
+    it('should parse multiple speed map entries', () => {
+      const result = parseSpeedMap('0=0% 1000=50% 2000=100%');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.entries).toEqual([
+          { rpm: 0, pwm: 0 },
+          { rpm: 1000, pwm: 50 },
+          { rpm: 2000, pwm: 100 }
+        ]);
+      }
+    });
+
+    it('should parse speed map entries without % symbol', () => {
+      const result = parseSpeedMap('1000=50 2000=100');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.entries).toEqual([
+          { rpm: 1000, pwm: 50 },
+          { rpm: 2000, pwm: 100 }
+        ]);
+      }
+    });
+
+    it('should parse decimal values', () => {
+      const result = parseSpeedMap('1000.5=50.5%');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.entries).toEqual([{ rpm: 1000.5, pwm: 50.5 }]);
+      }
+    });
+
+    it('should reject invalid format', () => {
+      const result = parseSpeedMap('invalid');
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('Invalid speed map entry');
+      }
+    });
+
+    it('should reject negative RPM', () => {
+      const result = parseSpeedMap('-100=50%');
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('RPM cannot be negative');
+      }
+    });
+
+    it('should reject PWM outside 0-100 range', () => {
+      const result1 = parseSpeedMap('1000=-10%');
+      expect(result1.success).toBe(false);
+      if (!result1.success) {
+        expect(result1.error).toContain('PWM percentage must be between 0 and 100');
+      }
+
+      const result2 = parseSpeedMap('1000=150%');
+      expect(result2.success).toBe(false);
+      if (!result2.success) {
+        expect(result2.error).toContain('PWM percentage must be between 0 and 100');
+      }
+    });
+  });
+
+  describe('validateSpeedMapMonotonic', () => {
+    it('should pass for empty entries', () => {
+      const result = validateSpeedMapMonotonic([]);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should pass for single entry', () => {
+      const result = validateSpeedMapMonotonic([{ rpm: 1000, pwm: 50 }]);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should pass for monotonic entries', () => {
+      const entries = [
+        { rpm: 0, pwm: 0 },
+        { rpm: 1000, pwm: 50 },
+        { rpm: 2000, pwm: 100 }
+      ];
+      const result = validateSpeedMapMonotonic(entries);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should pass for equal PWM values (non-decreasing)', () => {
+      const entries = [
+        { rpm: 0, pwm: 0 },
+        { rpm: 1000, pwm: 50 },
+        { rpm: 2000, pwm: 50 }
+      ];
+      const result = validateSpeedMapMonotonic(entries);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should reject duplicate RPM values', () => {
+      const entries = [
+        { rpm: 1000, pwm: 50 },
+        { rpm: 1000, pwm: 60 }
+      ];
+      const result = validateSpeedMapMonotonic(entries);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toContain('Duplicate RPM value found: 1000');
+      }
+    });
+
+    it('should reject non-monotonic PWM values', () => {
+      const entries = [
+        { rpm: 0, pwm: 50 },
+        { rpm: 1000, pwm: 25 }
+      ];
+      const result = validateSpeedMapMonotonic(entries);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toContain('Speed map is not monotonic');
+      }
+    });
+
+    it('should handle unordered entries correctly', () => {
+      const entries = [
+        { rpm: 2000, pwm: 100 },
+        { rpm: 0, pwm: 0 },
+        { rpm: 1000, pwm: 50 }
+      ];
+      const result = validateSpeedMapMonotonic(entries);
+      expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('validateSpeedMap', () => {
+    it('should validate correct speed map', () => {
+      const result = validateSpeedMap('0=0% 1000=50% 2000=100%');
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.entries).toEqual([
+          { rpm: 0, pwm: 0 },
+          { rpm: 1000, pwm: 50 },
+          { rpm: 2000, pwm: 100 }
+        ]);
+      }
+    });
+
+    it('should reject invalid format', () => {
+      const result = validateSpeedMap('invalid format');
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toContain('Invalid speed map entry');
+      }
+    });
+
+    it('should reject non-monotonic map', () => {
+      const result = validateSpeedMap('0=50% 1000=25%');
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toContain('Speed map is not monotonic');
+      }
+    });
+  });
+
+  describe('formatSpeedMap', () => {
+    it('should format entries to string', () => {
+      const entries = [
+        { rpm: 2000, pwm: 100 },
+        { rpm: 0, pwm: 0 },
+        { rpm: 1000, pwm: 50 }
+      ];
+      const result = formatSpeedMap(entries);
+      expect(result).toBe('0=0% 1000=50% 2000=100%');
+    });
+
+    it('should handle empty entries', () => {
+      const result = formatSpeedMap([]);
+      expect(result).toBe('');
+    });
+
+    it('should handle decimal values', () => {
+      const entries = [{ rpm: 1000.5, pwm: 50.5 }];
+      const result = formatSpeedMap(entries);
+      expect(result).toBe('1000.5=50.5%');
+    });
   });
 });
 
