@@ -17,6 +17,7 @@ export interface FluidNCConfig {
   uart?: UARTConfig;
   macros?: MacrosConfig;
   control?: ControlConfig;
+  sd?: SDConfig;
   [key: string]: unknown;
 }
 
@@ -153,6 +154,15 @@ export interface ControlConfig {
   cycle_start_pin?: string;
   fro_pin?: string;
   sro_pin?: string;
+  [key: string]: unknown;
+}
+
+export interface SDConfig {
+  card_detect_pin?: string;
+  miso_pin?: string;
+  mosi_pin?: string;
+  sck_pin?: string;
+  cs_pin?: string;
   [key: string]: unknown;
 }
 
@@ -334,6 +344,14 @@ export const ControlConfigSchema = z.object({
   sro_pin: z.string().optional(),
 }).catchall(z.unknown());
 
+export const SDConfigSchema = z.object({
+  card_detect_pin: z.string().optional(),
+  miso_pin: z.string().optional(),
+  mosi_pin: z.string().optional(),
+  sck_pin: z.string().optional(),
+  cs_pin: z.string().optional(),
+}).catchall(z.unknown());
+
 export const FluidNCConfigSchema = z.object({
   name: z.string().optional(),
   board: z.string().optional(),
@@ -345,6 +363,7 @@ export const FluidNCConfigSchema = z.object({
   uart: UARTConfigSchema.optional(),
   macros: MacrosConfigSchema.optional(),
   control: ControlConfigSchema.optional(),
+  sd: SDConfigSchema.optional(),
 }).catchall(z.unknown());
 
 // =============================================================================
