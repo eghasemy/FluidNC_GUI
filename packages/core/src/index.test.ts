@@ -53,7 +53,6 @@ import {
   extractAllPinAssignments,
   getPinStatus,
   getPinConflicts,
-  isValidPinAssignment,
 } from './index';
 
 describe('TMCConfigSchema', () => {
