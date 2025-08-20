@@ -7,7 +7,7 @@
 
 .expert-editor-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .expert-editor-header h2 {
@@ -18,6 +18,69 @@
 .expert-editor-header p {
   color: #666;
   margin: 0;
+}
+
+/* Config Actions Styles */
+.config-actions {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.action-group h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background: #0056b3;
+}
+
+.action-btn.sample {
+  background: #28a745;
+}
+
+.action-btn.sample:hover {
+  background: #218838;
+}
+
+.action-btn.export {
+  background: #17a2b8;
+}
+
+.action-btn.export:hover {
+  background: #138496;
+}
+
+.action-btn.import {
+  background: #ffc107;
+  color: #212529;
+}
+
+.action-btn.import:hover {
+  background: #e0a800;
 }
 
 .expert-editor-content {
@@ -307,6 +370,14 @@
     gap: 20px;
   }
   
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    text-align: center;
+  }
+  
   .form-row {
     flex-direction: column;
     align-items: stretch;
@@ -327,10 +398,15 @@
     color: #ccc;
   }
   
+  .config-actions,
   .config-tree,
   .config-form {
     background: #2d2d2d;
     border-color: #444;
+    color: #fff;
+  }
+  
+  .action-group h4 {
     color: #fff;
   }
   

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FluidNCConfig } from '@fluidnc-gui/core';
 import { ConfigTree } from './ConfigTree';
 import { ConfigForm } from './ConfigForm';
+import { ConfigActions } from './ConfigActions';
 import './ExpertEditor.css';
 
 export interface ExpertEditorProps {
@@ -23,6 +24,11 @@ export const ExpertEditor: React.FC<ExpertEditorProps> = ({
         <h2>Expert Configuration Editor</h2>
         <p>Edit any configuration key using schema-driven forms</p>
       </div>
+      
+      <ConfigActions 
+        config={config}
+        onConfigChange={onConfigChange}
+      />
       
       <div className="expert-editor-content">
         <div className="expert-editor-tree">
