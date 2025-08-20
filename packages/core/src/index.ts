@@ -302,6 +302,37 @@ export function validateSpindleConfig(config: unknown): { success: true; data: z
   return { success: false, errors: result.error };
 }
 
+/**
+ * Enhanced axis validation that includes cross-field validation
+ */
+export function validateAxisConfigWithContext(axisConfig: unknown, motorConfig?: MotorConfig, tmcConfig?: TMCConfig): { 
+  success: boolean; 
+  data?: z.infer<typeof AxisConfigSchema>; 
+  errors?: z.ZodError;
+  validationMessages?: string[];
+} {
+  const result = validateAxisConfig(axisConfig);
+  
+  if (!result.success) {
+    return result;
+  }
+  
+  // Perform cross-field validation
+  const context: AxisValidationContext = {
+    axis: result.data as AxisConfig,
+    motorConfig,
+    tmcConfig: tmcConfig || motorConfig?.tmc_2130 || motorConfig?.tmc_2209,
+  };
+  
+  const validation = validateAxisConfiguration(context);
+  
+  return {
+    success: validation.valid,
+    data: result.data,
+    validationMessages: validation.messages,
+  };
+}
+
 // =============================================================================
 // Defaults and Constants
 // =============================================================================
@@ -310,6 +341,231 @@ export const DEFAULT_CONFIG: FluidNCConfig = {
   name: 'FluidNC Configuration',
   board: '',
 };
+
+// =============================================================================
+// Steps/MM Calculator Utilities
+// =============================================================================
+
+export interface StepsPerMMParams {
+  motor_steps_per_rev?: number; // Default: 200 (1.8° stepper)
+  microsteps?: number; // Default: 16
+  drive_pulley_teeth?: number; // For belt drives
+  driven_pulley_teeth?: number; // For belt drives
+  belt_pitch_mm?: number; // GT2 = 2mm, GT3 = 3mm
+  leadscrew_pitch_mm?: number; // For leadscrew drives
+  pinion_teeth?: number; // For rack & pinion
+  rack_pitch_mm?: number; // For rack & pinion
+  gear_ratio?: number; // Additional gear reduction
+}
+
+/**
+ * Calculate steps per mm for belt/pulley drive systems
+ */
+export function calculateStepsPerMM_Belt(params: StepsPerMMParams): number {
+  const motorSteps = params.motor_steps_per_rev ?? 200;
+  const microsteps = params.microsteps ?? 16;
+  const drivePulleyTeeth = params.drive_pulley_teeth ?? 20;
+  const drivenPulleyTeeth = params.driven_pulley_teeth ?? drivePulleyTeeth;
+  const beltPitch = params.belt_pitch_mm ?? 2; // GT2 default
+  const gearRatio = params.gear_ratio ?? 1;
+  
+  const totalStepsPerRev = motorSteps * microsteps;
+  const drivePulleyCircumference = drivePulleyTeeth * beltPitch;
+  const mechanicalRatio = drivePulleyTeeth / drivenPulleyTeeth; // Smaller driven pulley = higher ratio
+  
+  return (totalStepsPerRev * gearRatio * mechanicalRatio) / drivePulleyCircumference;
+}
+
+/**
+ * Calculate steps per mm for leadscrew drive systems
+ */
+export function calculateStepsPerMM_Leadscrew(params: StepsPerMMParams): number {
+  const motorSteps = params.motor_steps_per_rev ?? 200;
+  const microsteps = params.microsteps ?? 16;
+  const leadscrewPitch = params.leadscrew_pitch_mm ?? 8; // 8mm leadscrew default
+  const gearRatio = params.gear_ratio ?? 1;
+  
+  const totalStepsPerRev = motorSteps * microsteps;
+  
+  return (totalStepsPerRev * gearRatio) / leadscrewPitch;
+}
+
+/**
+ * Calculate steps per mm for rack and pinion drive systems
+ */
+export function calculateStepsPerMM_RackPinion(params: StepsPerMMParams): number {
+  const motorSteps = params.motor_steps_per_rev ?? 200;
+  const microsteps = params.microsteps ?? 16;
+  const pinionTeeth = params.pinion_teeth ?? 20;
+  const rackPitch = params.rack_pitch_mm ?? 2; // GT2 rack default
+  const gearRatio = params.gear_ratio ?? 1;
+  
+  const totalStepsPerRev = motorSteps * microsteps;
+  const pinionCircumference = pinionTeeth * rackPitch;
+  
+  return (totalStepsPerRev * gearRatio) / pinionCircumference;
+}
+
+/**
+ * General steps per mm calculator that detects drive type from parameters
+ */
+export function calculateStepsPerMM(params: StepsPerMMParams): number {
+  if (params.leadscrew_pitch_mm) {
+    return calculateStepsPerMM_Leadscrew(params);
+  } else if (params.pinion_teeth && params.rack_pitch_mm) {
+    return calculateStepsPerMM_RackPinion(params);
+  } else if (params.drive_pulley_teeth && params.belt_pitch_mm) {
+    return calculateStepsPerMM_Belt(params);
+  } else {
+    // Default to belt drive with GT2
+    return calculateStepsPerMM_Belt(params);
+  }
+}
+
+// =============================================================================
+// Cross-field Validation Utilities
+// =============================================================================
+
+export interface AxisValidationContext {
+  axis: AxisConfig;
+  motorConfig?: MotorConfig | undefined;
+  tmcConfig?: TMCConfig | undefined;
+}
+
+/**
+ * Validates that steps_per_mm is consistent with motor configuration
+ */
+export function validateStepsPerMMConsistency(context: AxisValidationContext): { valid: boolean; message?: string } {
+  const { axis, tmcConfig } = context;
+  
+  if (!axis.steps_per_mm || !tmcConfig?.microsteps) {
+    return { valid: true }; // Cannot validate without required data
+  }
+  
+  // Calculate expected range based on common motor configurations
+  const motorSteps = 200; // Assume 1.8° stepper
+  const microsteps = tmcConfig.microsteps;
+  const totalStepsPerRev = motorSteps * microsteps;
+  
+  // Reasonable range for steps_per_mm: 1-10000 (covers most mechanical systems)
+  const minExpected = totalStepsPerRev / 10000; // Very fine pitch (e.g., 1mm leadscrew)
+  const maxExpected = totalStepsPerRev / 0.1; // Very coarse pitch (e.g., large pulley)
+  
+  if (axis.steps_per_mm < minExpected || axis.steps_per_mm > maxExpected) {
+    return {
+      valid: false,
+      message: `steps_per_mm (${axis.steps_per_mm}) appears inconsistent with microsteps (${microsteps}). Expected range: ${minExpected.toFixed(2)}-${maxExpected.toFixed(2)}`
+    };
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Validates that feed rates are achievable with the given steps_per_mm and motor configuration
+ */
+export function validateFeedRateCapability(context: AxisValidationContext): { valid: boolean; message?: string } {
+  const { axis, tmcConfig } = context;
+  
+  if (!axis.steps_per_mm || !axis.max_rate_mm_per_min || !tmcConfig?.microsteps) {
+    return { valid: true }; // Cannot validate without required data
+  }
+  
+  const stepsPerSecond = (axis.steps_per_mm * axis.max_rate_mm_per_min) / 60;
+  
+  // Typical stepper motor maximum step rate: ~50kHz for good performance
+  const maxStepRate = 50000; // Hz
+  
+  if (stepsPerSecond > maxStepRate) {
+    return {
+      valid: false,
+      message: `max_rate_mm_per_min (${axis.max_rate_mm_per_min}) requires ${stepsPerSecond.toFixed(0)} steps/sec, which exceeds typical stepper limit of ${maxStepRate} steps/sec`
+    };
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Validates acceleration limits based on motor and mechanical constraints
+ */
+export function validateAccelerationLimits(context: AxisValidationContext): { valid: boolean; message?: string } {
+  const { axis } = context;
+  
+  if (!axis.acceleration_mm_per_sec2 || !axis.steps_per_mm) {
+    return { valid: true }; // Cannot validate without required data
+  }
+  
+  const stepsPerSec2 = axis.acceleration_mm_per_sec2 * axis.steps_per_mm;
+  
+  // Reasonable acceleration limit for steppers: ~100,000 steps/sec²
+  const maxAcceleration = 100000; // steps/sec²
+  
+  if (stepsPerSec2 > maxAcceleration) {
+    return {
+      valid: false,
+      message: `acceleration_mm_per_sec2 (${axis.acceleration_mm_per_sec2}) requires ${stepsPerSec2.toFixed(0)} steps/sec², which may be too high for reliable stepper operation`
+    };
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Validates homing feed rates are reasonable compared to max rates
+ */
+export function validateHomingRates(context: AxisValidationContext): { valid: boolean; message?: string } {
+  const { axis } = context;
+  
+  if (!axis.homing || !axis.max_rate_mm_per_min) {
+    return { valid: true }; // Cannot validate without required data
+  }
+  
+  const { feed_mm_per_min, seek_mm_per_min } = axis.homing;
+  
+  if (feed_mm_per_min && feed_mm_per_min > axis.max_rate_mm_per_min) {
+    return {
+      valid: false,
+      message: `homing feed_mm_per_min (${feed_mm_per_min}) exceeds axis max_rate_mm_per_min (${axis.max_rate_mm_per_min})`
+    };
+  }
+  
+  if (seek_mm_per_min && seek_mm_per_min > axis.max_rate_mm_per_min) {
+    return {
+      valid: false,
+      message: `homing seek_mm_per_min (${seek_mm_per_min}) exceeds axis max_rate_mm_per_min (${axis.max_rate_mm_per_min})`
+    };
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Comprehensive axis configuration validation
+ */
+export function validateAxisConfiguration(context: AxisValidationContext): { valid: boolean; messages: string[] } {
+  const validators = [
+    validateStepsPerMMConsistency,
+    validateFeedRateCapability,
+    validateAccelerationLimits,
+    validateHomingRates,
+  ];
+  
+  const messages: string[] = [];
+  let allValid = true;
+  
+  for (const validator of validators) {
+    const result = validator(context);
+    if (!result.valid) {
+      allValid = false;
+      if (result.message) {
+        messages.push(result.message);
+      }
+    }
+  }
+  
+  return { valid: allValid, messages };
+}
 
 // =============================================================================
 // YAML Converters
