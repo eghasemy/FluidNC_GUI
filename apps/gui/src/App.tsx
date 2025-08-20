@@ -4,6 +4,7 @@ import { Wizard } from './components/Wizard';
 import { TestCalculator } from './components/TestCalculator';
 import { ExpertEditor } from './components/ExpertEditor';
 import Console from './components/Console';
+import DeviceValidation from './components/DeviceValidation';
 import './App.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
   const [showWizard, setShowWizard] = useState(false);
   const [showExpert, setShowExpert] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
   const [completedConfig, setCompletedConfig] = useState<FluidNCConfig | null>(null);
 
   const handleConfigurationComplete = (config: FluidNCConfig) => {
@@ -18,6 +20,7 @@ function App() {
     setShowWizard(false);
     setShowExpert(false);
     setShowConsole(false);
+    setShowValidation(false);
   };
 
   const startNewConfiguration = () => {
@@ -26,6 +29,7 @@ function App() {
     setShowTest(false);
     setShowExpert(false);
     setShowConsole(false);
+    setShowValidation(false);
   };
 
   const showWizardApp = () => {
@@ -33,6 +37,7 @@ function App() {
     setShowWizard(true);
     setShowExpert(false);
     setShowConsole(false);
+    setShowValidation(false);
   };
 
   const showExpertApp = () => {
@@ -40,6 +45,7 @@ function App() {
     setShowWizard(false);
     setShowExpert(true);
     setShowConsole(false);
+    setShowValidation(false);
   };
 
   const showConsoleApp = () => {
@@ -47,6 +53,15 @@ function App() {
     setShowWizard(false);
     setShowExpert(false);
     setShowConsole(true);
+    setShowValidation(false);
+  };
+
+  const showValidationApp = () => {
+    setShowTest(false);
+    setShowWizard(false);
+    setShowExpert(false);
+    setShowConsole(false);
+    setShowValidation(true);
   };
 
   const handleExpertConfigChange = (config: FluidNCConfig) => {
@@ -65,6 +80,9 @@ function App() {
           </button>
           <button onClick={showConsoleApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
             Go to Console
+          </button>
+          <button onClick={showValidationApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Device Validation
           </button>
           <span>Steps/mm Calculator Demo</span>
         </div>
@@ -85,6 +103,9 @@ function App() {
           </button>
           <button onClick={showConsoleApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
             Go to Console
+          </button>
+          <button onClick={showValidationApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Device Validation
           </button>
           <span>Full Configuration Wizard</span>
         </div>
@@ -111,6 +132,9 @@ function App() {
           <button onClick={showConsoleApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
             Go to Console
           </button>
+          <button onClick={showValidationApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Device Validation
+          </button>
           <span>Expert Configuration Editor</span>
         </div>
         <ExpertEditor 
@@ -123,6 +147,34 @@ function App() {
 
   if (showConsole) {
     return <Console />;
+  }
+
+  if (showValidation) {
+    const currentConfig = completedConfig || {
+      name: 'New FluidNC Configuration',
+      board: '',
+    };
+    
+    return (
+      <div>
+        <div style={{ padding: '10px', textAlign: 'center', backgroundColor: '#f0f0f0' }}>
+          <button onClick={() => setShowTest(true)} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Back to Calculator Demo
+          </button>
+          <button onClick={showWizardApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Go to Wizard
+          </button>
+          <button onClick={showExpertApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Go to Expert Editor
+          </button>
+          <button onClick={showConsoleApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Go to Console
+          </button>
+          <span>Device Configuration Validation</span>
+        </div>
+        <DeviceValidation config={currentConfig} />
+      </div>
+    );
   }
 
   return (
