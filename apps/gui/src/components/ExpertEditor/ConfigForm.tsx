@@ -22,16 +22,16 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
   const getValueAtPath = (obj: unknown, path: string[]): unknown => {
     if (path.length === 0) return obj;
     
-    let current = obj as any;
+    let current = obj as Record<string, unknown>;
     for (const key of path) {
       if (current === null || current === undefined) return undefined;
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
     return current;
   };
 
-  const setValueAtPath = (obj: any, path: string[], value: unknown): any => {
-    if (path.length === 0) return value;
+  const setValueAtPath = (obj: Record<string, unknown>, path: string[], value: unknown): Record<string, unknown> => {
+    if (path.length === 0) return value as Record<string, unknown>;
     
     const result = { ...obj };
     let current = result;
@@ -42,9 +42,9 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
       if (current[key] === undefined || current[key] === null) {
         current[key] = {};
       } else {
-        current[key] = { ...current[key] };
+        current[key] = { ...(current[key] as Record<string, unknown>) };
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
     
     const lastKey = path[path.length - 1];
@@ -55,7 +55,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
     return result;
   };
 
-  const deleteValueAtPath = (obj: any, path: string[]): any => {
+  const deleteValueAtPath = (obj: Record<string, unknown>, path: string[]): Record<string, unknown> => {
     if (path.length === 0) return {};
     
     const result = { ...obj };
@@ -64,8 +64,8 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
     for (let i = 0; i < path.length - 1; i++) {
       const key = path[i];
       if (!key || current[key] === undefined) return result;
-      current[key] = { ...current[key] };
-      current = current[key];
+      current[key] = { ...(current[key] as Record<string, unknown>) };
+      current = current[key] as Record<string, unknown>;
     }
     
     const lastKey = path[path.length - 1];
@@ -80,14 +80,14 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
   const isObject = typeof currentValue === 'object' && currentValue !== null;
 
   const handleValueChange = (value: unknown) => {
-    const newConfig = setValueAtPath(config, selectedPath, value) as FluidNCConfig;
+    const newConfig = setValueAtPath(config as Record<string, unknown>, selectedPath, value) as FluidNCConfig;
     onConfigChange(newConfig);
   };
 
   const handleDeleteKey = () => {
     if (selectedPath.length === 0) return;
     
-    const newConfig = deleteValueAtPath(config, selectedPath) as FluidNCConfig;
+    const newConfig = deleteValueAtPath(config as Record<string, unknown>, selectedPath) as FluidNCConfig;
     onConfigChange(newConfig);
   };
 
@@ -107,7 +107,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
     }
     
     const newPath = [...selectedPath, newKeyName];
-    const newConfig = setValueAtPath(config, newPath, parsedValue) as FluidNCConfig;
+    const newConfig = setValueAtPath(config as Record<string, unknown>, newPath, parsedValue) as FluidNCConfig;
     onConfigChange(newConfig);
     
     setNewKeyName('');
