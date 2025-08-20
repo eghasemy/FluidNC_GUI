@@ -6,6 +6,9 @@ import { MotorsStep } from './steps/MotorsStep';
 import { HomingStep } from './steps/HomingStep';
 import { SpindleStep } from './steps/SpindleStep';
 import { IOStep } from './steps/IOStep';
+import { UARTStep } from './steps/UARTStep';
+import { MacrosStep } from './steps/MacrosStep';
+import { SDStep } from './steps/SDStep';
 import { ReviewStep } from './steps/ReviewStep';
 import { WizardNavigation } from './WizardNavigation';
 import { StepIndicator } from './StepIndicator';
@@ -29,6 +32,9 @@ const WIZARD_STEPS: Omit<WizardStep, 'isValid' | 'isCompleted'>[] = [
   { id: 'homing', title: 'Homing' },
   { id: 'spindle', title: 'Spindle' },
   { id: 'io', title: 'IO' },
+  { id: 'uart', title: 'UART' },
+  { id: 'macros', title: 'Macros' },
+  { id: 'sd', title: 'SD Card' },
   { id: 'review', title: 'Review' },
 ];
 
@@ -135,6 +141,30 @@ export const Wizard: React.FC<WizardProps> = ({ onConfigurationComplete }) => {
             config={config}
             onConfigChange={updateConfig}
             onValidationChange={(isValid) => updateStepValidation('io', isValid)}
+          />
+        );
+      case 'uart':
+        return (
+          <UARTStep
+            config={config}
+            onConfigChange={updateConfig}
+            onValidationChange={(isValid) => updateStepValidation('uart', isValid)}
+          />
+        );
+      case 'macros':
+        return (
+          <MacrosStep
+            config={config}
+            onConfigChange={updateConfig}
+            onValidationChange={(isValid) => updateStepValidation('macros', isValid)}
+          />
+        );
+      case 'sd':
+        return (
+          <SDStep
+            config={config}
+            onConfigChange={updateConfig}
+            onValidationChange={(isValid) => updateStepValidation('sd', isValid)}
           />
         );
       case 'review':

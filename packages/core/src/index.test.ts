@@ -12,6 +12,7 @@ import {
   UARTChannelConfigSchema,
   MacrosConfigSchema,
   ControlConfigSchema,
+  SDConfigSchema,
   BoardDescriptorSchema,
   BoardPinSchema,
   BoardCapabilitiesSchema,
@@ -629,6 +630,39 @@ describe('ControlConfigSchema', () => {
   });
 });
 
+describe('SDConfigSchema', () => {
+  it('should validate complete SD configuration', () => {
+    const validSD = {
+      card_detect_pin: 'gpio.21',
+      miso_pin: 'gpio.19',
+      mosi_pin: 'gpio.23',
+      sck_pin: 'gpio.18',
+      cs_pin: 'gpio.5',
+    };
+
+    const result = SDConfigSchema.safeParse(validSD);
+    expect(result.success).toBe(true);
+  });
+
+  it('should allow empty SD configuration', () => {
+    const result = SDConfigSchema.safeParse({});
+    expect(result.success).toBe(true);
+  });
+
+  it('should allow partial SD configuration', () => {
+    const partialSD = {
+      miso_pin: 'gpio.19',
+      mosi_pin: 'gpio.23',
+      sck_pin: 'gpio.18',
+      cs_pin: 'gpio.5',
+      // card_detect_pin omitted (optional)
+    };
+
+    const result = SDConfigSchema.safeParse(partialSD);
+    expect(result.success).toBe(true);
+  });
+});
+
 describe('FluidNCConfigSchema', () => {
   it('should validate complete FluidNC configuration', () => {
     const validConfig = {
@@ -1122,6 +1156,13 @@ axes:
           reset_pin: 'gpio.14',
           customControlProperty: 'control preserved',
         },
+        sd: {
+          miso_pin: 'gpio.19',
+          mosi_pin: 'gpio.23',
+          sck_pin: 'gpio.18',
+          cs_pin: 'gpio.5',
+          customSDProperty: 'sd preserved',
+        },
       };
 
       // Step 1: Convert to YAML
@@ -1159,6 +1200,7 @@ axes:
         expect(roundTripConfig.uart?.customUARTConfigProperty).toBe(originalConfig.uart.customUARTConfigProperty);
         expect(roundTripConfig.macros?.customMacroProperty).toBe(originalConfig.macros.customMacroProperty);
         expect(roundTripConfig.control?.customControlProperty).toBe(originalConfig.control.customControlProperty);
+        expect(roundTripConfig.sd?.customSDProperty).toBe(originalConfig.sd.customSDProperty);
       }
     });
 
