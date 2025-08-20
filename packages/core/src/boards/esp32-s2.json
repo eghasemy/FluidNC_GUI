@@ -1,0 +1,325 @@
+{
+  "id": "esp32-s2",
+  "name": "ESP32-S2",
+  "description": "ESP32-S2 development board with WiFi and enhanced security features",
+  "version": "1.0",
+  "manufacturer": "Espressif",
+  "capabilities": {
+    "uart_channels": 2,
+    "spi_channels": 4,
+    "i2c_channels": 2,
+    "adc_channels": 20,
+    "dac_channels": 2,
+    "pwm_channels": 8,
+    "touch_pins": 14,
+    "flash_size": "4MB",
+    "ram_size": "320KB",
+    "cpu_frequency": "240MHz",
+    "wifi": true,
+    "bluetooth": false,
+    "ethernet": false,
+    "notes": "Single-core ESP32-S2 with enhanced security and USB OTG support"
+  },
+  "pins": [
+    {
+      "name": "GPIO0",
+      "gpio": 0,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "notes": "Boot mode selection pin"
+      }
+    },
+    {
+      "name": "GPIO1",
+      "gpio": 1,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH0, safe to use"
+      }
+    },
+    {
+      "name": "GPIO2",
+      "gpio": 2,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH1, safe to use"
+      }
+    },
+    {
+      "name": "GPIO3",
+      "gpio": 3,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH2, safe to use"
+      }
+    },
+    {
+      "name": "GPIO4",
+      "gpio": 4,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH3, safe to use"
+      }
+    },
+    {
+      "name": "GPIO5",
+      "gpio": 5,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH4, safe to use"
+      }
+    },
+    {
+      "name": "GPIO6",
+      "gpio": 6,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH5, safe to use"
+      }
+    },
+    {
+      "name": "GPIO7",
+      "gpio": 7,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH6, safe to use"
+      }
+    },
+    {
+      "name": "GPIO8",
+      "gpio": 8,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH7, safe to use"
+      }
+    },
+    {
+      "name": "GPIO9",
+      "gpio": 9,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH8, safe to use"
+      }
+    },
+    {
+      "name": "GPIO10",
+      "gpio": 10,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC1_CH9, safe to use"
+      }
+    },
+    {
+      "name": "GPIO11",
+      "gpio": 11,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO12",
+      "gpio": 12,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO13",
+      "gpio": 13,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO14",
+      "gpio": 14,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO15",
+      "gpio": 15,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO16",
+      "gpio": 16,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    },
+    {
+      "name": "GPIO17",
+      "gpio": 17,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH6, safe to use"
+      }
+    },
+    {
+      "name": "GPIO18",
+      "gpio": 18,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH7, DAC1"
+      }
+    },
+    {
+      "name": "GPIO19",
+      "gpio": 19,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH8, DAC2, USB D-"
+      }
+    },
+    {
+      "name": "GPIO20",
+      "gpio": 20,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "ADC2_CH9, USB D+"
+      }
+    },
+    {
+      "name": "GPIO21",
+      "gpio": 21,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Safe to use"
+      }
+    }
+  ],
+  "notes": "ESP32-S2 is a single-core variant with enhanced security features and USB OTG support. No Bluetooth capability but includes native USB interface."
+}

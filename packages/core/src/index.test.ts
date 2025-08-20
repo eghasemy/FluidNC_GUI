@@ -12,10 +12,23 @@ import {
   UARTChannelConfigSchema,
   MacrosConfigSchema,
   ControlConfigSchema,
+  BoardDescriptorSchema,
+  BoardPinSchema,
+  BoardCapabilitiesSchema,
+  PinCapabilitySchema,
   validateFluidNCConfig,
   validateAxisConfig,
   validateSpindleConfig,
   validateAxisConfigWithContext,
+  validateBoardDescriptor,
+  loadBoardDescriptor,
+  loadBoardDescriptorFromObject,
+  getBoardDescriptor,
+  getAllBoardDescriptors,
+  getBoardIds,
+  findBoardByName,
+  BOARD_DESCRIPTORS,
+  ESP32_BOARD,
   DEFAULT_CONFIG,
   toYAML,
   fromYAML,
@@ -1642,6 +1655,363 @@ describe('Configuration Diff', () => {
 
     it('should handle array indices', () => {
       expect(formatPath(['homing', 'cycle', '0'])).toBe('homing.cycle.0');
+    });
+  });
+});
+
+describe('Board Descriptor Tests', () => {
+  describe('PinCapabilitySchema', () => {
+    it('should validate valid pin capability', () => {
+      const validCapability = {
+        digital: true,
+        input: true,
+        output: true,
+        pwm: true,
+        analog: false,
+        notes: 'General purpose pin',
+      };
+
+      const result = PinCapabilitySchema.safeParse(validCapability);
+      expect(result.success).toBe(true);
+    });
+
+    it('should allow empty capability object', () => {
+      const result = PinCapabilitySchema.safeParse({});
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('BoardPinSchema', () => {
+    it('should validate valid board pin', () => {
+      const validPin = {
+        name: 'GPIO2',
+        gpio: 2,
+        capabilities: {
+          digital: true,
+          input: true,
+          output: true,
+          pwm: true,
+        },
+      };
+
+      const result = BoardPinSchema.safeParse(validPin);
+      expect(result.success).toBe(true);
+    });
+
+    it('should require name and gpio', () => {
+      const invalidPin = {
+        capabilities: {
+          digital: true,
+        },
+      };
+
+      const result = BoardPinSchema.safeParse(invalidPin);
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject negative gpio numbers', () => {
+      const invalidPin = {
+        name: 'GPIO-1',
+        gpio: -1,
+        capabilities: {},
+      };
+
+      const result = BoardPinSchema.safeParse(invalidPin);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('BoardCapabilitiesSchema', () => {
+    it('should validate complete board capabilities', () => {
+      const validCapabilities = {
+        uart_channels: 3,
+        spi_channels: 4,
+        i2c_channels: 2,
+        adc_channels: 18,
+        pwm_channels: 16,
+        flash_size: '4MB',
+        ram_size: '520KB',
+        cpu_frequency: '240MHz',
+        wifi: true,
+        bluetooth: true,
+        ethernet: false,
+        notes: 'ESP32 capabilities',
+      };
+
+      const result = BoardCapabilitiesSchema.safeParse(validCapabilities);
+      expect(result.success).toBe(true);
+    });
+
+    it('should allow empty capabilities', () => {
+      const result = BoardCapabilitiesSchema.safeParse({});
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject negative channel counts', () => {
+      const invalidCapabilities = {
+        uart_channels: -1,
+      };
+
+      const result = BoardCapabilitiesSchema.safeParse(invalidCapabilities);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('BoardDescriptorSchema', () => {
+    it('should validate complete board descriptor', () => {
+      const validDescriptor = {
+        id: 'esp32',
+        name: 'ESP32',
+        description: 'ESP32 development board',
+        pins: [
+          {
+            name: 'GPIO2',
+            gpio: 2,
+            capabilities: {
+              digital: true,
+              input: true,
+              output: true,
+              pwm: true,
+            },
+          },
+        ],
+        capabilities: {
+          uart_channels: 3,
+          wifi: true,
+        },
+        notes: 'A versatile development board',
+        version: '1.0',
+        manufacturer: 'Espressif',
+      };
+
+      const result = BoardDescriptorSchema.safeParse(validDescriptor);
+      expect(result.success).toBe(true);
+    });
+
+    it('should require id, name, pins, and capabilities', () => {
+      const invalidDescriptor = {
+        name: 'ESP32',
+      };
+
+      const result = BoardDescriptorSchema.safeParse(invalidDescriptor);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('validateBoardDescriptor', () => {
+    it('should return success for valid descriptor', () => {
+      const validDescriptor = {
+        id: 'test-board',
+        name: 'Test Board',
+        pins: [],
+        capabilities: {},
+      };
+
+      const result = validateBoardDescriptor(validDescriptor);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBe('test-board');
+        expect(result.data.name).toBe('Test Board');
+      }
+    });
+
+    it('should return error for invalid descriptor', () => {
+      const invalidDescriptor = {
+        id: 'test-board',
+        // Missing required fields
+      };
+
+      const result = validateBoardDescriptor(invalidDescriptor);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.errors.issues.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('loadBoardDescriptor', () => {
+    it('should load valid JSON board descriptor', () => {
+      const jsonString = JSON.stringify({
+        id: 'esp32',
+        name: 'ESP32',
+        pins: [
+          {
+            name: 'GPIO2',
+            gpio: 2,
+            capabilities: {
+              digital: true,
+            },
+          },
+        ],
+        capabilities: {
+          uart_channels: 3,
+        },
+      });
+
+      const result = loadBoardDescriptor(jsonString);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBe('esp32');
+        expect(result.data.name).toBe('ESP32');
+        expect(result.data.pins.length).toBe(1);
+      }
+    });
+
+    it('should handle JSON parsing errors', () => {
+      const invalidJson = '{ invalid json }';
+
+      const result = loadBoardDescriptor(invalidJson);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.errors.issues[0].message).toContain('JSON parsing error');
+      }
+    });
+
+    it('should handle validation errors', () => {
+      const jsonString = JSON.stringify({
+        id: 'test',
+        // Missing required fields
+      });
+
+      const result = loadBoardDescriptor(jsonString);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('loadBoardDescriptorFromObject', () => {
+    it('should load valid object descriptor', () => {
+      const descriptor = {
+        id: 'esp32',
+        name: 'ESP32',
+        pins: [],
+        capabilities: {},
+      };
+
+      const result = loadBoardDescriptorFromObject(descriptor);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBe('esp32');
+      }
+    });
+  });
+
+  describe('Sample Board Descriptors', () => {
+    it('should validate a sample ESP32-like board descriptor', () => {
+      // Test with a sample ESP32-like descriptor
+      const sampleDescriptor = {
+        id: 'esp32-sample',
+        name: 'ESP32 Sample',
+        description: 'Sample ESP32 board for testing',
+        pins: [
+          {
+            name: 'GPIO2',
+            gpio: 2,
+            capabilities: {
+              digital: true,
+              input: true,
+              output: true,
+              pwm: true,
+              pullup: true,
+              pulldown: true,
+              notes: 'General purpose pin',
+            },
+          },
+          {
+            name: 'GPIO4',
+            gpio: 4,
+            capabilities: {
+              digital: true,
+              input: true,
+              output: true,
+              pwm: true,
+              analog: true,
+              notes: 'ADC capable pin',
+            },
+          },
+        ],
+        capabilities: {
+          uart_channels: 3,
+          spi_channels: 4,
+          i2c_channels: 2,
+          adc_channels: 18,
+          pwm_channels: 16,
+          flash_size: '4MB',
+          ram_size: '520KB',
+          wifi: true,
+          bluetooth: true,
+        },
+        notes: 'Sample ESP32 board descriptor for testing',
+        version: '1.0',
+        manufacturer: 'Test Manufacturer',
+      };
+      
+      const result = validateBoardDescriptor(sampleDescriptor);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBe('esp32-sample');
+        expect(result.data.name).toBe('ESP32 Sample');
+        expect(result.data.pins.length).toBe(2);
+        expect(result.data.capabilities.wifi).toBe(true);
+        expect(result.data.capabilities.uart_channels).toBe(3);
+      }
+    });
+  });
+
+  describe('Board Utility Functions', () => {
+    it('should get board descriptor by id', () => {
+      const esp32 = getBoardDescriptor('esp32');
+      expect(esp32).toBeDefined();
+      expect(esp32?.id).toBe('esp32');
+      expect(esp32?.name).toBe('ESP32');
+    });
+
+    it('should return undefined for non-existent board', () => {
+      const nonExistent = getBoardDescriptor('non-existent');
+      expect(nonExistent).toBeUndefined();
+    });
+
+    it('should get all board descriptors', () => {
+      const allBoards = getAllBoardDescriptors();
+      expect(allBoards.length).toBeGreaterThan(0);
+      expect(allBoards.some(board => board.id === 'esp32')).toBe(true);
+    });
+
+    it('should get all board IDs', () => {
+      const boardIds = getBoardIds();
+      expect(boardIds).toContain('esp32');
+      expect(boardIds).toContain('esp32-s2');
+      expect(boardIds).toContain('esp32-s3');
+      expect(boardIds).toContain('esp32-c3');
+    });
+
+    it('should find board by name', () => {
+      const esp32 = findBoardByName('ESP32');
+      expect(esp32).toBeDefined();
+      expect(esp32?.id).toBe('esp32');
+
+      // Case insensitive search
+      const esp32Lower = findBoardByName('esp32');
+      expect(esp32Lower).toBeDefined();
+      expect(esp32Lower?.id).toBe('esp32');
+    });
+
+    it('should return undefined for non-existent board name', () => {
+      const nonExistent = findBoardByName('Non-existent Board');
+      expect(nonExistent).toBeUndefined();
+    });
+
+    it('should validate ESP32 board descriptor from constants', () => {
+      expect(ESP32_BOARD.id).toBe('esp32');
+      expect(ESP32_BOARD.name).toBe('ESP32');
+      expect(ESP32_BOARD.capabilities.wifi).toBe(true);
+      expect(ESP32_BOARD.pins.length).toBeGreaterThan(0);
+    });
+
+    it('should have all expected boards in BOARD_DESCRIPTORS', () => {
+      expect(BOARD_DESCRIPTORS['esp32']).toBeDefined();
+      expect(BOARD_DESCRIPTORS['esp32-s2']).toBeDefined();
+      expect(BOARD_DESCRIPTORS['esp32-s3']).toBeDefined();
+      expect(BOARD_DESCRIPTORS['esp32-c3']).toBeDefined();
     });
   });
 });
