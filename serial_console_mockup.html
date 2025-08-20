@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FluidNC Console - Serial Mode</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: monospace;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        .console-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .header {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            background-color: #2d2d2d;
+        }
+        .header h2 {
+            margin: 0 0 10px 0;
+            color: #ffffff;
+        }
+        .config-section {
+            margin-bottom: 10px;
+        }
+        .config-section label {
+            margin-right: 10px;
+        }
+        .config-section select, .config-section input, .config-section button {
+            padding: 5px;
+            margin-right: 10px;
+        }
+        .serial-config {
+            background-color: #3a3a3a;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #2196F3;
+        }
+        .connection-controls {
+            margin-bottom: 10px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-refresh {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 3px;
+        }
+        .messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+        .message {
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+        .message-sent {
+            color: #4CAF50;
+            border-left: 3px solid #4CAF50;
+            padding-left: 8px;
+        }
+        .message-received {
+            color: #ffffff;
+        }
+        .input-area {
+            padding: 10px;
+            border-top: 1px solid #333;
+            background-color: #2d2d2d;
+            display: flex;
+            gap: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 8px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="console-container">
+        <!-- Header with connection controls -->
+        <div class="header">
+            <h2>FluidNC Console - Serial Mode</h2>
+            
+            <!-- Connection Type Selector -->
+            <div class="config-section">
+                <label>Connection Type:</label>
+                <select>
+                    <option value="Serial" selected>Serial Port</option>
+                    <option value="Tcp">TCP (Wi-Fi)</option>
+                    <option value="WebSocket">WebSocket (Wi-Fi)</option>
+                </select>
+            </div>
+
+            <!-- Serial Configuration -->
+            <div class="config-section serial-config">
+                <strong>Serial Port Configuration:</strong><br><br>
+                <button class="btn-refresh">Refresh Ports</button>
+                
+                <select style="min-width: 150px;">
+                    <option>/dev/ttyUSB0 (USB Serial)</option>
+                    <option>/dev/ttyACM0 (USB Serial)</option>
+                    <option>COM3 (USB Serial)</option>
+                </select>
+                
+                <label>Baud Rate:</label>
+                <select>
+                    <option>9600</option>
+                    <option>19200</option>
+                    <option>38400</option>
+                    <option>57600</option>
+                    <option selected>115200</option>
+                    <option>230400</option>
+                </select>
+            </div>
+
+            <!-- Connection Controls -->
+            <div class="connection-controls">
+                <button class="btn btn-primary">Connect</button>
+                <span class="status">Connected (Serial)</span>
+            </div>
+        </div>
+
+        <!-- Messages area -->
+        <div class="messages">
+            <div style="margin-bottom: 10px;">
+                <button class="btn" style="background-color: #ff9800; color: white;">Clear Messages</button>
+            </div>
+            
+            <div class="message">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:28:10]</span>
+                <span style="color: #4CAF50;">Connected to /dev/ttyUSB0 at 115200 baud</span>
+            </div>
+            <div class="message message-sent">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:28:15]</span>
+                <span>> $I</span>
+            </div>
+            <div class="message message-received">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:28:15]</span>
+                <span>[VER:3.7.0.20220201:FluidNC v3.7.0]</span>
+            </div>
+            <div class="message message-sent">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:28:20]</span>
+                <span>> $$</span>
+            </div>
+            <div class="message message-received">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:28:20]</span>
+                <span>$0=10 (Step pulse time, microseconds)</span>
+            </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="input-area">
+            <input type="text" placeholder="Enter G-code command..." value="G28">
+            <button class="btn btn-primary">Send</button>
+        </div>
+    </div>
+</body>
+</html>

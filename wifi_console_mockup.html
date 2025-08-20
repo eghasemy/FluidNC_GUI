@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FluidNC Console - Wi-Fi Support Mockup</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: monospace;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        .console-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .header {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            background-color: #2d2d2d;
+        }
+        .header h2 {
+            margin: 0 0 10px 0;
+            color: #ffffff;
+        }
+        .config-section {
+            margin-bottom: 10px;
+        }
+        .config-section label {
+            margin-right: 10px;
+        }
+        .config-section select, .config-section input {
+            padding: 5px;
+            margin-right: 10px;
+        }
+        .wifi-config {
+            background-color: #3a3a3a;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #4CAF50;
+        }
+        .connection-controls {
+            margin-bottom: 10px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 3px;
+        }
+        .messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+        .message {
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+        .message-sent {
+            color: #4CAF50;
+            border-left: 3px solid #4CAF50;
+            padding-left: 8px;
+        }
+        .message-received {
+            color: #ffffff;
+        }
+        .input-area {
+            padding: 10px;
+            border-top: 1px solid #333;
+            background-color: #2d2d2d;
+            display: flex;
+            gap: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 8px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .highlight {
+            background-color: #ffffcc;
+            color: #000000;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="console-container">
+        <!-- Header with connection controls -->
+        <div class="header">
+            <h2>FluidNC Console</h2>
+            
+            <!-- Connection Type Selector - NEW FEATURE -->
+            <div class="config-section">
+                <label>Connection Type:</label>
+                <select>
+                    <option value="Serial">Serial Port</option>
+                    <option value="Tcp" selected>TCP (Wi-Fi) ✨</option>
+                    <option value="WebSocket">WebSocket (Wi-Fi) ✨</option>
+                </select>
+                <span class="highlight">NEW: Wi-Fi Support!</span>
+            </div>
+
+            <!-- Wi-Fi Configuration - NEW FEATURE -->
+            <div class="config-section wifi-config">
+                <strong>Wi-Fi Connection Settings:</strong><br><br>
+                <label>IP Address:</label>
+                <input type="text" value="192.168.1.100" style="width: 150px;">
+                
+                <label>Port:</label>
+                <input type="number" value="23" style="width: 80px;">
+                <br><br>
+                <small>💡 Enter your FluidNC device's IP address and port (typically 23 for TCP)</small>
+            </div>
+
+            <!-- Connection Controls -->
+            <div class="connection-controls">
+                <button class="btn btn-primary">Connect</button>
+                <span class="status">Connected (TCP)</span>
+            </div>
+        </div>
+
+        <!-- Messages area -->
+        <div class="messages">
+            <div style="margin-bottom: 10px;">
+                <button class="btn" style="background-color: #ff9800; color: white;">Clear Messages</button>
+            </div>
+            
+            <div class="message">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:30:15]</span>
+                <span style="color: #4CAF50;">Connected to 192.168.1.100:23 (TCP)</span>
+            </div>
+            <div class="message message-sent">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:30:20]</span>
+                <span>> $I</span>
+            </div>
+            <div class="message message-received">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:30:20]</span>
+                <span>[VER:3.7.0.20220201:FluidNC v3.7.0]</span>
+            </div>
+            <div class="message message-sent">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:30:25]</span>
+                <span>> $$</span>
+            </div>
+            <div class="message message-received">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:30:25]</span>
+                <span>$0=10 (Step pulse time, microseconds)</span>
+            </div>
+            <div class="message message-received">
+                <span style="opacity: 0.7; font-size: 12px; margin-right: 10px;">[10:30:25]</span>
+                <span>$1=25 (Step idle delay, milliseconds)</span>
+            </div>
+            <div class="message" style="color: #4CAF50; background-color: #d4edda; padding: 8px; border-radius: 5px; margin: 10px 0;">
+                <strong>✅ Wi-Fi Connection Working!</strong><br>
+                Successfully connected to FluidNC via TCP. Same experience as serial connection!
+            </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="input-area">
+            <input type="text" placeholder="Enter G-code command..." value="G28">
+            <button class="btn btn-primary">Send</button>
+        </div>
+    </div>
+
+    <!-- Feature highlight overlay -->
+    <div style="position: fixed; top: 20px; right: 20px; background-color: #4CAF50; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); max-width: 300px;">
+        <h3 style="margin-top: 0;">🎉 New Features</h3>
+        <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>TCP Wi-Fi Support</strong></li>
+            <li><strong>WebSocket Support</strong></li>
+            <li><strong>Same UX as Serial</strong></li>
+            <li><strong>Backward Compatible</strong></li>
+        </ul>
+    </div>
+</body>
+</html>
