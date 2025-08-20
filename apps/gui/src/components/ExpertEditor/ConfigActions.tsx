@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FluidNCConfig } from '@fluidnc-gui/core';
+import { YamlDiffViewer } from './YamlDiffViewer';
 
 // Import yaml from js-yaml (types should be available via @types/js-yaml)
 import { dump, load } from 'js-yaml';
@@ -13,6 +14,21 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
   config,
   onConfigChange,
 }) => {
+  const [showDiffViewer, setShowDiffViewer] = useState(false);
+  const [baselineConfig, setBaselineConfig] = useState<FluidNCConfig | null>(null);
+  
+  const handleSaveBaseline = () => {
+    setBaselineConfig({ ...config });
+    setShowDiffViewer(false);
+  };
+  
+  const handleToggleDiffViewer = () => {
+    if (!baselineConfig) {
+      // Set current config as baseline if none exists
+      setBaselineConfig({ ...config });
+    }
+    setShowDiffViewer(!showDiffViewer);
+  };
   const handleExportYaml = () => {
     try {
       const yamlString = dump(config, {
@@ -151,30 +167,57 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
   };
 
   return (
-    <div className="config-actions">
-      <div className="action-group">
-        <h4>Configuration Management</h4>
-        <div className="action-buttons">
-          <button onClick={handleLoadSample} className="action-btn sample">
-            Load Sample Config
-          </button>
-          <button onClick={handleExportYaml} className="action-btn export">
-            Export YAML
-          </button>
-          <button onClick={handleExportJson} className="action-btn export">
-            Export JSON
-          </button>
-          <label className="action-btn import">
-            Import YAML
-            <input
-              type="file"
-              accept=".yaml,.yml"
-              onChange={handleImportYaml}
-              style={{ display: 'none' }}
-            />
-          </label>
+    <>
+      <div className="config-actions">
+        <div className="action-group">
+          <h4>Configuration Management</h4>
+          <div className="action-buttons">
+            <button onClick={handleLoadSample} className="action-btn sample">
+              Load Sample Config
+            </button>
+            <button onClick={handleExportYaml} className="action-btn export">
+              Export YAML
+            </button>
+            <button onClick={handleExportJson} className="action-btn export">
+              Export JSON
+            </button>
+            <label className="action-btn import">
+              Import YAML
+              <input
+                type="file"
+                accept=".yaml,.yml"
+                onChange={handleImportYaml}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+        </div>
+        
+        <div className="action-group">
+          <h4>Configuration Comparison</h4>
+          <div className="action-buttons">
+            <button onClick={handleSaveBaseline} className="action-btn">
+              Save as Baseline
+              {baselineConfig && <span className="baseline-indicator">✓</span>}
+            </button>
+            <button 
+              onClick={handleToggleDiffViewer} 
+              className="action-btn diff"
+              disabled={!baselineConfig}
+            >
+              {showDiffViewer ? 'Hide Diff' : 'Show Diff'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      
+      {showDiffViewer && baselineConfig && (
+        <YamlDiffViewer
+          beforeConfig={baselineConfig}
+          afterConfig={config}
+          title="Configuration Changes"
+        />
+      )}
+    </>
   );
 };

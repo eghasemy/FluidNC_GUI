@@ -31,6 +31,10 @@ import {
   validateHomingRates,
   validateAxisConfiguration,
   AxisValidationContext,
+  // Diff functions
+  diffConfigurations,
+  formatValue,
+  formatPath,
 } from './index';
 
 describe('TMCConfigSchema', () => {
@@ -1368,6 +1372,276 @@ describe('Cross-field Validation', () => {
       const result = validateAxisConfigWithContext(invalidAxisConfig);
       expect(result.success).toBe(false);
       expect(result.errors).toBeDefined();
+    });
+  });
+});
+
+// =============================================================================
+// Configuration Diff Tests
+// =============================================================================
+
+describe('Configuration Diff', () => {
+  describe('diffConfigurations', () => {
+    it('should detect no differences for identical configurations', () => {
+      const config1 = {
+        name: 'Test Machine',
+        board: 'ESP32',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+          },
+        },
+      };
+      
+      const config2 = { ...config1 };
+      const diffs = diffConfigurations(config1, config2);
+      
+      expect(diffs).toHaveLength(0);
+    });
+
+    it('should detect value changes', () => {
+      const oldConfig = {
+        name: 'Test Machine',
+        board: 'ESP32',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+          },
+        },
+      };
+      
+      const newConfig = {
+        ...oldConfig,
+        name: 'Updated Machine',
+      };
+      
+      const diffs = diffConfigurations(oldConfig, newConfig);
+      
+      expect(diffs).toHaveLength(1);
+      expect(diffs[0]).toEqual({
+        path: ['name'],
+        type: 'changed',
+        oldValue: 'Test Machine',
+        newValue: 'Updated Machine',
+      });
+    });
+
+    it('should detect added properties', () => {
+      const oldConfig = {
+        name: 'Test Machine',
+      };
+      
+      const newConfig = {
+        name: 'Test Machine',
+        board: 'ESP32',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+          },
+        },
+      };
+      
+      const diffs = diffConfigurations(oldConfig, newConfig);
+      
+      expect(diffs).toHaveLength(2);
+      expect(diffs).toContainEqual({
+        path: ['board'],
+        type: 'added',
+        newValue: 'ESP32',
+      });
+      expect(diffs).toContainEqual({
+        path: ['axes'],
+        type: 'added',
+        newValue: {
+          x: {
+            steps_per_mm: 80,
+          },
+        },
+      });
+    });
+
+    it('should detect removed properties', () => {
+      const oldConfig = {
+        name: 'Test Machine',
+        board: 'ESP32',
+        version: '3.7',
+      };
+      
+      const newConfig = {
+        name: 'Test Machine',
+      };
+      
+      const diffs = diffConfigurations(oldConfig, newConfig);
+      
+      expect(diffs).toHaveLength(2);
+      expect(diffs).toContainEqual({
+        path: ['board'],
+        type: 'removed',
+        oldValue: 'ESP32',
+      });
+      expect(diffs).toContainEqual({
+        path: ['version'],
+        type: 'removed',
+        oldValue: '3.7',
+      });
+    });
+
+    it('should detect nested changes', () => {
+      const oldConfig = {
+        name: 'Test Machine',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+          },
+          y: {
+            steps_per_mm: 80,
+          },
+        },
+      };
+      
+      const newConfig = {
+        name: 'Test Machine',
+        axes: {
+          x: {
+            steps_per_mm: 100, // Changed
+            max_rate_mm_per_min: 5000,
+            acceleration_mm_per_sec2: 200, // Added
+          },
+          y: {
+            steps_per_mm: 80,
+          },
+        },
+      };
+      
+      const diffs = diffConfigurations(oldConfig, newConfig);
+      
+      expect(diffs).toHaveLength(2);
+      expect(diffs).toContainEqual({
+        path: ['axes', 'x', 'steps_per_mm'],
+        type: 'changed',
+        oldValue: 80,
+        newValue: 100,
+      });
+      expect(diffs).toContainEqual({
+        path: ['axes', 'x', 'acceleration_mm_per_sec2'],
+        type: 'added',
+        newValue: 200,
+      });
+    });
+
+    it('should handle array differences', () => {
+      const oldConfig = {
+        homing: {
+          cycle: [1, 2],
+        },
+      };
+      
+      const newConfig = {
+        homing: {
+          cycle: [1, 2, 3],
+        },
+      };
+      
+      const diffs = diffConfigurations(oldConfig, newConfig);
+      
+      expect(diffs).toHaveLength(1);
+      expect(diffs[0]).toEqual({
+        path: ['homing', 'cycle', '2'],
+        type: 'added',
+        newValue: 3,
+      });
+    });
+
+    it('should handle null and undefined values', () => {
+      const oldConfig = {
+        name: 'Test',
+        board: 'ESP32',
+        version: '3.7',
+      };
+      
+      const newConfig = {
+        name: 'Test',
+        // board property is removed
+        // version property is removed
+      };
+      
+      const diffs = diffConfigurations(oldConfig, newConfig);
+      
+      expect(diffs).toHaveLength(2);
+      expect(diffs).toContainEqual({
+        path: ['board'],
+        type: 'removed',
+        oldValue: 'ESP32',
+      });
+      expect(diffs).toContainEqual({
+        path: ['version'],
+        type: 'removed',
+        oldValue: '3.7',
+      });
+    });
+
+    it('should be stable across minor rearrangements', () => {
+      // This test ensures AST-aware diffing by checking that
+      // equivalent configurations with different object key orders
+      // produce no differences
+      
+      const config1 = {
+        name: 'Test Machine',
+        axes: {
+          x: { steps_per_mm: 80, max_rate_mm_per_min: 5000 },
+          y: { steps_per_mm: 80, max_rate_mm_per_min: 5000 },
+        },
+        board: 'ESP32',
+      };
+      
+      const config2 = {
+        board: 'ESP32',
+        name: 'Test Machine',
+        axes: {
+          y: { max_rate_mm_per_min: 5000, steps_per_mm: 80 },
+          x: { max_rate_mm_per_min: 5000, steps_per_mm: 80 },
+        },
+      };
+      
+      const diffs = diffConfigurations(config1, config2);
+      expect(diffs).toHaveLength(0);
+    });
+  });
+
+  describe('formatValue', () => {
+    it('should format primitive values correctly', () => {
+      expect(formatValue('string')).toBe('"string"');
+      expect(formatValue(42)).toBe('42');
+      expect(formatValue(true)).toBe('true');
+      expect(formatValue(null)).toBe('null');
+      expect(formatValue(undefined)).toBe('undefined');
+    });
+
+    it('should format arrays correctly', () => {
+      expect(formatValue([1, 2, 3])).toBe('[1, 2, 3]');
+      expect(formatValue(['a', 'b'])).toBe('[\"a\", \"b\"]');
+    });
+
+    it('should format objects correctly', () => {
+      const obj = { name: 'test', value: 42 };
+      const formatted = formatValue(obj);
+      expect(formatted).toContain('"name": "test"');
+      expect(formatted).toContain('"value": 42');
+    });
+  });
+
+  describe('formatPath', () => {
+    it('should format empty path as root', () => {
+      expect(formatPath([])).toBe('(root)');
+    });
+
+    it('should format path as dot-separated string', () => {
+      expect(formatPath(['axes', 'x', 'steps_per_mm'])).toBe('axes.x.steps_per_mm');
+    });
+
+    it('should handle array indices', () => {
+      expect(formatPath(['homing', 'cycle', '0'])).toBe('homing.cycle.0');
     });
   });
 });

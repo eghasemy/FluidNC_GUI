@@ -83,6 +83,25 @@
   background: #e0a800;
 }
 
+.action-btn.diff {
+  background: #6f42c1;
+}
+
+.action-btn.diff:hover {
+  background: #5a32a3;
+}
+
+.action-btn.diff:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.baseline-indicator {
+  margin-left: 5px;
+  color: #28a745;
+  font-weight: bold;
+}
+
 .expert-editor-content {
   display: grid;
   grid-template-columns: 1fr 2fr;
