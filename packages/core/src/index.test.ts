@@ -1633,7 +1633,7 @@ describe('Configuration Diff', () => {
 
     it('should format arrays correctly', () => {
       expect(formatValue([1, 2, 3])).toBe('[1, 2, 3]');
-      expect(formatValue(['a', 'b'])).toBe('[\"a\", \"b\"]');
+      expect(formatValue(['a', 'b'])).toBe('["a", "b"]');
     });
 
     it('should format objects correctly', () => {
