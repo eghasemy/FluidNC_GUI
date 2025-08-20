@@ -224,6 +224,129 @@ export const IOStep: React.FC<IOStepProps> = ({
           </div>
         </div>
 
+        <h3>User Output Pins</h3>
+        <p>Configure pins for user-controllable digital and PWM outputs (M62-M65, M67-M68 commands).</p>
+        
+        <div className="form-row">
+          <div className="form-group">
+            <PinInput
+              label="User Output 0 Pin"
+              value={config.io?.user_output_0_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_output_0_pin', value)}
+              config={config}
+              sourceField="io.user_output_0_pin"
+              placeholder="gpio.32"
+            />
+            <div className="help-text">
+              Digital output controlled by M62 P0/M63 P0 commands
+            </div>
+          </div>
+
+          <div className="form-group">
+            <PinInput
+              label="User Output 1 Pin"
+              value={config.io?.user_output_1_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_output_1_pin', value)}
+              config={config}
+              sourceField="io.user_output_1_pin"
+              placeholder="gpio.33"
+            />
+            <div className="help-text">
+              Digital output controlled by M62 P1/M63 P1 commands
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <PinInput
+              label="User Output 2 Pin"
+              value={config.io?.user_output_2_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_output_2_pin', value)}
+              config={config}
+              sourceField="io.user_output_2_pin"
+              placeholder="gpio.34"
+            />
+            <div className="help-text">
+              Digital output controlled by M62 P2/M63 P2 commands
+            </div>
+          </div>
+
+          <div className="form-group">
+            <PinInput
+              label="User Output 3 Pin"
+              value={config.io?.user_output_3_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_output_3_pin', value)}
+              config={config}
+              sourceField="io.user_output_3_pin"
+              placeholder="gpio.35"
+            />
+            <div className="help-text">
+              Digital output controlled by M62 P3/M63 P3 commands
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <PinInput
+              label="User PWM 0 Pin"
+              value={config.io?.user_pwm_0_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_pwm_0_pin', value)}
+              config={config}
+              sourceField="io.user_pwm_0_pin"
+              placeholder="gpio.36"
+            />
+            <div className="help-text">
+              PWM output controlled by M67 E0 commands
+            </div>
+          </div>
+
+          <div className="form-group">
+            <PinInput
+              label="User PWM 1 Pin"
+              value={config.io?.user_pwm_1_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_pwm_1_pin', value)}
+              config={config}
+              sourceField="io.user_pwm_1_pin"
+              placeholder="gpio.37"
+            />
+            <div className="help-text">
+              PWM output controlled by M67 E1 commands
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <PinInput
+              label="User PWM 2 Pin"
+              value={config.io?.user_pwm_2_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_pwm_2_pin', value)}
+              config={config}
+              sourceField="io.user_pwm_2_pin"
+              placeholder="gpio.38"
+            />
+            <div className="help-text">
+              PWM output controlled by M67 E2 commands
+            </div>
+          </div>
+
+          <div className="form-group">
+            <PinInput
+              label="User PWM 3 Pin"
+              value={config.io?.user_pwm_3_pin || ''}
+              onChange={(value) => handleIOConfigChange('user_pwm_3_pin', value)}
+              config={config}
+              sourceField="io.user_pwm_3_pin"
+              placeholder="gpio.39"
+            />
+            <div className="help-text">
+              PWM output controlled by M67 E3 commands
+            </div>
+          </div>
+        </div>
+
         <div className="io-info">
           <h4>GPIO Pin Information</h4>
           <p>
@@ -241,6 +364,10 @@ export const IOStep: React.FC<IOStepProps> = ({
           <p>
             <strong>Macro Pins:</strong> Connect momentary switches to these pins to trigger predefined G-code macros.
             Useful for functions like tool changes, part probing, or custom routines.
+          </p>
+          <p>
+            <strong>User Output Pins:</strong> Digital outputs controlled via M62-M65 commands for custom functions like lighting, 
+            vacuum, dust collection, or other machine accessories. PWM outputs (M67-M68) can control variable speed devices.
           </p>
           <p>
             <strong>Note:</strong> All IO configurations are optional. Only configure pins that you actually plan to use.

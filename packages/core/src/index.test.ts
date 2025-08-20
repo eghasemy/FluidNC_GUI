@@ -2427,6 +2427,245 @@ describe('Pin Utilities', () => {
       expect(Object.keys(conflicts)).toHaveLength(0);
     });
 
+    it('should validate comprehensive configuration with all current features', () => {
+      const comprehensiveConfig: any = {
+        name: 'Comprehensive Test Machine',
+        board: 'ESP32',
+        version: '3.7.0',
+        
+        // Test current IO configuration
+        io: {
+          probe_pin: 'gpio.25',
+          flood_pin: 'gpio.26',
+          mist_pin: 'gpio.27',
+          macro0_pin: 'gpio.33',
+          macro1_pin: 'gpio.34',
+          macro2_pin: 'gpio.35',
+          macro3_pin: 'gpio.36',
+        },
+        
+        // Test current control configuration
+        control: {
+          safety_door_pin: 'gpio.19',
+          reset_pin: 'gpio.18',
+          feed_hold_pin: 'gpio.17',
+          cycle_start_pin: 'gpio.16',
+          fro_pin: 'gpio.15',
+          sro_pin: 'gpio.14',
+        },
+        
+        // Test axes configuration
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+            acceleration_mm_per_sec2: 100,
+            max_travel_mm: 300,
+            soft_limits: true,
+            motor0: {
+              step_pin: 'gpio.1',
+              direction_pin: 'gpio.2',
+              disable_pin: 'gpio.3',
+              limit_neg_pin: 'gpio.4',
+              limit_pos_pin: 'gpio.5',
+            },
+          },
+          y: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+            acceleration_mm_per_sec2: 100,
+            max_travel_mm: 300,
+            soft_limits: true,
+            motor0: {
+              step_pin: 'gpio.6',
+              direction_pin: 'gpio.7',
+              disable_pin: 'gpio.8',
+            },
+          },
+          z: {
+            steps_per_mm: 400,
+            max_rate_mm_per_min: 1000,
+            acceleration_mm_per_sec2: 50,
+            max_travel_mm: 100,
+            soft_limits: true,
+            motor0: {
+              step_pin: 'gpio.9',
+              direction_pin: 'gpio.10',
+              disable_pin: 'gpio.11',
+            },
+          },
+        },
+        
+        // Test spindle configuration
+        spindle: {
+          type: 'PWM',
+          pwm_hz: 1000,
+          output_pin: 'gpio.12',
+          enable_pin: 'gpio.13',
+          direction_pin: 'gpio.21',
+          speed_map: '0=0% 1000=100%',
+          spinup_ms: 1000,
+          spindown_ms: 2000,
+        },
+        
+        // Test UART configuration
+        uart: {
+          uart0: {
+            txd_pin: 'gpio.22',
+            rxd_pin: 'gpio.23',
+            baud: 115200,
+          },
+        },
+        
+        // Test macros configuration
+        macros: {
+          macro0: 'G0 X0 Y0',
+          macro1: '$H',
+          startup_line0: '$H',
+          startup_line1: 'G92 X0 Y0 Z0',
+        },
+      };
+
+      const result = validateFluidNCConfig(comprehensiveConfig);
+      expect(result.success).toBe(true);
+      
+      // Also test pin extraction works
+      const assignments = extractAllPinAssignments(comprehensiveConfig);
+      expect(assignments['gpio.25']).toEqual(['io.probe_pin']);
+      expect(assignments['gpio.26']).toEqual(['io.flood_pin']);
+      expect(assignments['gpio.27']).toEqual(['io.mist_pin']);
+      expect(assignments['gpio.17']).toEqual(['control.feed_hold_pin']);
+    });
+
+    it('should test if user output pins would validate', () => {
+      const configWithUserOutputs: any = {
+        name: 'Machine with User Outputs',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25',
+          flood_pin: 'gpio.26', 
+          mist_pin: 'gpio.27',
+          
+          // Test if these would be accepted (they might not exist yet)
+          user_output_0_pin: 'gpio.32',
+          user_output_1_pin: 'gpio.39',
+          user_pwm_0_pin: 'gpio.42',
+          user_pwm_1_pin: 'gpio.43',
+        }
+      };
+
+      const result = validateFluidNCConfig(configWithUserOutputs);
+      // This will tell us if user output pins are supported or need to be added
+      console.log('User output pins validation:', result.success);
+      if (!result.success) {
+        console.log('Missing fields might be:', result.errors?.issues?.map(i => i.path).join(', '));
+      }
+      
+      // For now, we expect this to pass due to catchall(z.unknown())
+      expect(result.success).toBe(true);
+      
+      // But test if pin extraction handles user output pins
+      const assignments = extractAllPinAssignments(configWithUserOutputs);
+      expect(assignments['gpio.32']).toEqual(['io.user_output_0_pin']); // These should now be extracted
+      expect(assignments['gpio.39']).toEqual(['io.user_output_1_pin']);
+      expect(assignments['gpio.42']).toEqual(['io.user_pwm_0_pin']); 
+      expect(assignments['gpio.43']).toEqual(['io.user_pwm_1_pin']);
+    });
+
+    it('should validate IO configuration with user output pins', () => {
+      const ioConfigWithUserOutputs = {
+        probe_pin: 'gpio.25',
+        flood_pin: 'gpio.26',
+        mist_pin: 'gpio.27',
+        user_output_0_pin: 'gpio.32',
+        user_output_1_pin: 'gpio.33',
+        user_output_2_pin: 'gpio.34',
+        user_output_3_pin: 'gpio.35',
+        user_pwm_0_pin: 'gpio.36',
+        user_pwm_1_pin: 'gpio.37',
+        user_pwm_2_pin: 'gpio.38',
+        user_pwm_3_pin: 'gpio.39',
+      };
+
+      const result = IOConfigSchema.safeParse(ioConfigWithUserOutputs);
+      expect(result.success).toBe(true);
+    });
+
+    it('should extract all user output pins from configuration', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          user_output_0_pin: 'gpio.32',
+          user_output_1_pin: 'gpio.33',
+          user_pwm_0_pin: 'gpio.36',
+          user_pwm_1_pin: 'gpio.37',
+        }
+      };
+
+      const assignments = extractAllPinAssignments(config);
+      
+      expect(assignments['gpio.32']).toEqual(['io.user_output_0_pin']);
+      expect(assignments['gpio.33']).toEqual(['io.user_output_1_pin']);
+      expect(assignments['gpio.36']).toEqual(['io.user_pwm_0_pin']);
+      expect(assignments['gpio.37']).toEqual(['io.user_pwm_1_pin']);
+    });
+
+    it('should validate complete CNC configuration with user outputs', () => {
+      const cncConfig: any = {
+        name: 'CNC with User Outputs',
+        board: 'ESP32',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+            acceleration_mm_per_sec2: 100,
+            max_travel_mm: 300,
+            soft_limits: true,
+          },
+          y: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+            acceleration_mm_per_sec2: 100,
+            max_travel_mm: 300,
+            soft_limits: true,
+          },
+          z: {
+            steps_per_mm: 400,
+            max_rate_mm_per_min: 1000,
+            acceleration_mm_per_sec2: 50,
+            max_travel_mm: 100,
+            soft_limits: true,
+          },
+        },
+        io: {
+          probe_pin: 'gpio.25',
+          flood_pin: 'gpio.26',
+          mist_pin: 'gpio.27',
+          user_output_0_pin: 'gpio.32',
+          user_output_1_pin: 'gpio.33',
+          user_pwm_0_pin: 'gpio.36',
+        },
+        control: {
+          feed_hold_pin: 'gpio.17',
+          cycle_start_pin: 'gpio.16',
+          reset_pin: 'gpio.18',
+        },
+      };
+
+      const result = validateFluidNCConfig(cncConfig);
+      expect(result.success).toBe(true);
+      
+      // Test that pin extraction works
+      const assignments = extractAllPinAssignments(cncConfig);
+      expect(assignments['gpio.32']).toEqual(['io.user_output_0_pin']);
+      expect(assignments['gpio.33']).toEqual(['io.user_output_1_pin']);
+      expect(assignments['gpio.36']).toEqual(['io.user_pwm_0_pin']);
+      expect(assignments['gpio.17']).toEqual(['control.feed_hold_pin']);
+      expect(assignments['gpio.26']).toEqual(['io.flood_pin']);
+      expect(assignments['gpio.27']).toEqual(['io.mist_pin']);
+    });
+
     it('should detect all pin conflicts', () => {
       const config: any = {
         name: 'Test',
