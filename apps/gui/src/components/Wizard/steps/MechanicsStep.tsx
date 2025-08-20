@@ -51,7 +51,7 @@ export const MechanicsStep: React.FC<MechanicsStepProps> = ({
   useEffect(() => {
     validateStep();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.axes, selectedAxes, onValidationChange]);
+  }, [config.axes, selectedAxes]);
 
   const handleAxisToggle = (axisName: string) => {
     const newSelectedAxes = selectedAxes.includes(axisName)
