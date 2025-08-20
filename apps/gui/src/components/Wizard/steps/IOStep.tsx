@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FluidNCConfig, IOConfig } from '@fluidnc-gui/core';
+import { PinInput } from '../../PinInput';
+import { usePinManager } from '../../../hooks/usePinManager';
 
 interface IOStepProps {
   config: FluidNCConfig;
@@ -13,12 +15,20 @@ export const IOStep: React.FC<IOStepProps> = ({
   onValidationChange,
 }) => {
   const [errors, setErrors] = useState<string[]>([]);
+  const pinManager = usePinManager(config);
 
   const validateStep = () => {
     const newErrors: string[] = [];
     
-    // IO configuration is mostly optional, so validation is minimal
-    // Just check for valid GPIO pin format if provided
+    // Check for pin conflicts
+    if (pinManager.hasPinConflicts) {
+      Object.entries(pinManager.pinConflicts).forEach(([pin, usedBy]) => {
+        const usedByArray = Array.isArray(usedBy) ? usedBy : [usedBy];
+        newErrors.push(`Pin ${pin} is used by multiple fields: ${usedByArray.join(', ')}`);
+      });
+    }
+    
+    // Check individual pin validity
     if (config.io) {
       const pinFields: (keyof IOConfig)[] = [
         'probe_pin', 'flood_pin', 'mist_pin', 
@@ -28,16 +38,15 @@ export const IOStep: React.FC<IOStepProps> = ({
       pinFields.forEach(field => {
         const pin = config.io?.[field];
         if (pin && typeof pin === 'string' && pin.trim() !== '') {
-          // Basic GPIO pin validation
-          if (!pin.match(/^gpio\.\d+$/i) && !pin.match(/^i2so\.\d+$/i) && !pin.match(/^i2si\.\d+$/i)) {
-            newErrors.push(`${field}: Invalid GPIO pin format. Use format like 'gpio.25'`);
+          const validation = pinManager.validatePinAssignment(pin, `io.${field}`);
+          if (!validation.isValid) {
+            newErrors.push(`${field}: ${validation.errors[0]}`);
           }
         }
       });
     }
 
     setErrors(newErrors);
-    // IO step is always valid since all configurations are optional
     const isValid = newErrors.length === 0;
     onValidationChange(isValid);
     return isValid;
@@ -68,6 +77,23 @@ export const IOStep: React.FC<IOStepProps> = ({
     <div className="io-step">
       <p>Configure input/output pins for probes, coolant, and macro functions. All settings are optional.</p>
       
+      {pinManager.hasPinConflicts && (
+        <div className="validation-summary invalid">
+          <h4>⚠ Pin Conflicts Detected</h4>
+          <ul>
+            {Object.entries(pinManager.pinConflicts).map(([pin, usedBy]) => {
+              const usedByArray = Array.isArray(usedBy) ? usedBy : [usedBy];
+              return (
+                <li key={pin}>
+                  <strong>{pin}</strong> is used by: {usedByArray.join(', ')}
+                </li>
+              );
+            })}
+          </ul>
+          <p>Please change one of the conflicting assignments to resolve this issue.</p>
+        </div>
+      )}
+      
       {errors.length > 0 && (
         <div className="validation-summary invalid">
           <h4>Please fix the following issues:</h4>
@@ -79,20 +105,24 @@ export const IOStep: React.FC<IOStepProps> = ({
         </div>
       )}
 
-      {errors.length === 0 && (
+      {errors.length === 0 && !pinManager.hasPinConflicts && (
         <div className="validation-summary valid">
           <h4>✓ IO configuration is valid</h4>
+          {pinManager.boardDescriptor && (
+            <p>Board: {pinManager.boardDescriptor.name}</p>
+          )}
         </div>
       )}
 
       <div className="io-configuration">
         <h3>Probe Configuration</h3>
         <div className="form-group">
-          <label>Probe Pin</label>
-          <input
-            type="text"
+          <PinInput
+            label="Probe Pin"
             value={config.io?.probe_pin || ''}
-            onChange={(e) => handleIOConfigChange('probe_pin', e.target.value)}
+            onChange={(value) => handleIOConfigChange('probe_pin', value)}
+            config={config}
+            sourceField="io.probe_pin"
             placeholder="gpio.32"
           />
           <div className="help-text">
@@ -103,11 +133,12 @@ export const IOStep: React.FC<IOStepProps> = ({
         <h3>Coolant Control</h3>
         <div className="form-row">
           <div className="form-group">
-            <label>Flood Coolant Pin</label>
-            <input
-              type="text"
+            <PinInput
+              label="Flood Coolant Pin"
               value={config.io?.flood_pin || ''}
-              onChange={(e) => handleIOConfigChange('flood_pin', e.target.value)}
+              onChange={(value) => handleIOConfigChange('flood_pin', value)}
+              config={config}
+              sourceField="io.flood_pin"
               placeholder="gpio.16"
             />
             <div className="help-text">
@@ -116,11 +147,12 @@ export const IOStep: React.FC<IOStepProps> = ({
           </div>
 
           <div className="form-group">
-            <label>Mist Coolant Pin</label>
-            <input
-              type="text"
+            <PinInput
+              label="Mist Coolant Pin"
               value={config.io?.mist_pin || ''}
-              onChange={(e) => handleIOConfigChange('mist_pin', e.target.value)}
+              onChange={(value) => handleIOConfigChange('mist_pin', value)}
+              config={config}
+              sourceField="io.mist_pin"
               placeholder="gpio.17"
             />
             <div className="help-text">
@@ -134,11 +166,12 @@ export const IOStep: React.FC<IOStepProps> = ({
         
         <div className="form-row">
           <div className="form-group">
-            <label>Macro 0 Pin</label>
-            <input
-              type="text"
+            <PinInput
+              label="Macro 0 Pin"
               value={config.io?.macro0_pin || ''}
-              onChange={(e) => handleIOConfigChange('macro0_pin', e.target.value)}
+              onChange={(value) => handleIOConfigChange('macro0_pin', value)}
+              config={config}
+              sourceField="io.macro0_pin"
               placeholder="gpio.33"
             />
             <div className="help-text">
@@ -147,11 +180,12 @@ export const IOStep: React.FC<IOStepProps> = ({
           </div>
 
           <div className="form-group">
-            <label>Macro 1 Pin</label>
-            <input
-              type="text"
+            <PinInput
+              label="Macro 1 Pin"
               value={config.io?.macro1_pin || ''}
-              onChange={(e) => handleIOConfigChange('macro1_pin', e.target.value)}
+              onChange={(value) => handleIOConfigChange('macro1_pin', value)}
+              config={config}
+              sourceField="io.macro1_pin"
               placeholder="gpio.34"
             />
             <div className="help-text">
@@ -162,11 +196,12 @@ export const IOStep: React.FC<IOStepProps> = ({
 
         <div className="form-row">
           <div className="form-group">
-            <label>Macro 2 Pin</label>
-            <input
-              type="text"
+            <PinInput
+              label="Macro 2 Pin"
               value={config.io?.macro2_pin || ''}
-              onChange={(e) => handleIOConfigChange('macro2_pin', e.target.value)}
+              onChange={(value) => handleIOConfigChange('macro2_pin', value)}
+              config={config}
+              sourceField="io.macro2_pin"
               placeholder="gpio.35"
             />
             <div className="help-text">
@@ -175,11 +210,12 @@ export const IOStep: React.FC<IOStepProps> = ({
           </div>
 
           <div className="form-group">
-            <label>Macro 3 Pin</label>
-            <input
-              type="text"
+            <PinInput
+              label="Macro 3 Pin"
               value={config.io?.macro3_pin || ''}
-              onChange={(e) => handleIOConfigChange('macro3_pin', e.target.value)}
+              onChange={(value) => handleIOConfigChange('macro3_pin', value)}
+              config={config}
+              sourceField="io.macro3_pin"
               placeholder="gpio.36"
             />
             <div className="help-text">

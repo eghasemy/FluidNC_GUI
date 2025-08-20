@@ -48,6 +48,12 @@ import {
   diffConfigurations,
   formatValue,
   formatPath,
+  // Pin utilities
+  extractGpioNumber,
+  extractAllPinAssignments,
+  getPinStatus,
+  getPinConflicts,
+  isValidPinAssignment,
 } from './index';
 
 describe('TMCConfigSchema', () => {
@@ -2012,6 +2018,185 @@ describe('Board Descriptor Tests', () => {
       expect(BOARD_DESCRIPTORS['esp32-s2']).toBeDefined();
       expect(BOARD_DESCRIPTORS['esp32-s3']).toBeDefined();
       expect(BOARD_DESCRIPTORS['esp32-c3']).toBeDefined();
+    });
+  });
+});
+
+// =============================================================================
+// Pin Utilities Tests
+// =============================================================================
+
+describe('Pin Utilities', () => {
+  describe('extractGpioNumber', () => {
+    it('should extract GPIO number from valid gpio pin strings', () => {
+      expect(extractGpioNumber('gpio.25')).toBe(25);
+      expect(extractGpioNumber('GPIO.2')).toBe(2);
+      expect(extractGpioNumber('gpio.0')).toBe(0);
+    });
+
+    it('should return null for invalid pin strings', () => {
+      expect(extractGpioNumber('i2so.25')).toBeNull();
+      expect(extractGpioNumber('invalid')).toBeNull();
+      expect(extractGpioNumber('gpio.abc')).toBeNull();
+      expect(extractGpioNumber('')).toBeNull();
+    });
+  });
+
+  describe('extractAllPinAssignments', () => {
+    it('should extract pin assignments from IO configuration', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25',
+          flood_pin: 'gpio.26',
+          macro0_pin: 'gpio.27'
+        }
+      };
+
+      const assignments = extractAllPinAssignments(config);
+      
+      expect(assignments['gpio.25']).toEqual(['io.probe_pin']);
+      expect(assignments['gpio.26']).toEqual(['io.flood_pin']);
+      expect(assignments['gpio.27']).toEqual(['io.macro0_pin']);
+    });
+
+    it('should extract pin assignments from motor configuration', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            motor0: {
+              step_pin: 'gpio.1',
+              direction_pin: 'gpio.2',
+              disable_pin: 'gpio.3'
+            }
+          }
+        }
+      };
+
+      const assignments = extractAllPinAssignments(config);
+      
+      expect(assignments['gpio.1']).toEqual(['axes.x.motor0.step_pin']);
+      expect(assignments['gpio.2']).toEqual(['axes.x.motor0.direction_pin']);
+      expect(assignments['gpio.3']).toEqual(['axes.x.motor0.disable_pin']);
+    });
+
+    it('should detect pin conflicts', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25'
+        },
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            motor0: {
+              step_pin: 'gpio.25', // Conflict with probe_pin
+              direction_pin: 'gpio.2'
+            }
+          }
+        }
+      };
+
+      const assignments = extractAllPinAssignments(config);
+      
+      expect(assignments['gpio.25']).toEqual(['io.probe_pin', 'axes.x.motor0.step_pin']);
+    });
+  });
+
+  describe('getPinStatus', () => {
+    it('should validate pin format', () => {
+      const config: any = { name: 'Test', board: 'ESP32' };
+      
+      const validStatus = getPinStatus('gpio.25', config);
+      expect(validStatus.isValid).toBe(true);
+      expect(validStatus.errors).toEqual([]);
+
+      const invalidStatus = getPinStatus('invalid.pin', config);
+      expect(invalidStatus.isValid).toBe(false);
+      expect(invalidStatus.errors[0]).toMatch(/Invalid pin format/);
+    });
+
+    it('should detect pin usage', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25'
+        }
+      };
+
+      const status = getPinStatus('gpio.25', config);
+      expect(status.isUsed).toBe(true);
+      expect(status.usedBy).toEqual(['io.probe_pin']);
+    });
+
+    it('should detect pin conflicts', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25'
+        },
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            motor0: {
+              step_pin: 'gpio.25',
+              direction_pin: 'gpio.2'
+            }
+          }
+        }
+      };
+
+      const status = getPinStatus('gpio.25', config);
+      expect(status.isValid).toBe(false);
+      expect(status.usedBy).toEqual(['io.probe_pin', 'axes.x.motor0.step_pin']);
+      expect(status.errors[0]).toMatch(/Pin conflict/);
+    });
+  });
+
+  describe('getPinConflicts', () => {
+    it('should return empty object when no conflicts', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25',
+          flood_pin: 'gpio.26'
+        }
+      };
+
+      const conflicts = getPinConflicts(config);
+      expect(Object.keys(conflicts)).toHaveLength(0);
+    });
+
+    it('should detect all pin conflicts', () => {
+      const config: any = {
+        name: 'Test',
+        board: 'ESP32',
+        io: {
+          probe_pin: 'gpio.25',
+          flood_pin: 'gpio.26'
+        },
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            motor0: {
+              step_pin: 'gpio.25', // Conflict with probe_pin
+              direction_pin: 'gpio.26' // Conflict with flood_pin
+            }
+          }
+        }
+      };
+
+      const conflicts = getPinConflicts(config);
+      expect(conflicts['gpio.25']).toEqual(['io.probe_pin', 'axes.x.motor0.step_pin']);
+      expect(conflicts['gpio.26']).toEqual(['io.flood_pin', 'axes.x.motor0.direction_pin']);
     });
   });
 });
