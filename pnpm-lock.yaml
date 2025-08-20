@@ -38,6 +38,9 @@ importers:
 
   apps/gui:
     dependencies:
+      '@fluidnc-gui/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@tauri-apps/api':
         specifier: ^2
         version: 2.8.0
