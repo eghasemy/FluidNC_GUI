@@ -25,11 +25,11 @@ export const TestCalculator: React.FC = () => {
       <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
         <h3>How to use:</h3>
         <ol>
-          <li>Click "Use Calculator" to show the calculator panel</li>
-          <li>Select your drive type: Belt/Pulley, Leadscrew, or Rack & Pinion</li>
+          <li>Click &quot;Use Calculator&quot; to show the calculator panel</li>
+          <li>Select your drive type: Belt/Pulley, Leadscrew, or Rack &amp; Pinion</li>
           <li>Enter the appropriate mechanical parameters</li>
           <li>The calculated value will be shown in real-time</li>
-          <li>Click "Apply Calculated Value" to update the steps/mm field</li>
+          <li>Click &quot;Apply Calculated Value&quot; to update the steps/mm field</li>
         </ol>
       </div>
     </div>

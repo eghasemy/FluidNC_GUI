@@ -2,27 +2,42 @@ import { useState } from 'react';
 import { FluidNCConfig } from '@fluidnc-gui/core';
 import { Wizard } from './components/Wizard';
 import { TestCalculator } from './components/TestCalculator';
+import { ExpertEditor } from './components/ExpertEditor';
 import './App.css';
 
 function App() {
   const [showTest, setShowTest] = useState(true);
   const [showWizard, setShowWizard] = useState(false);
+  const [showExpert, setShowExpert] = useState(false);
   const [completedConfig, setCompletedConfig] = useState<FluidNCConfig | null>(null);
 
   const handleConfigurationComplete = (config: FluidNCConfig) => {
     setCompletedConfig(config);
     setShowWizard(false);
+    setShowExpert(false);
   };
 
   const startNewConfiguration = () => {
     setCompletedConfig(null);
     setShowWizard(true);
     setShowTest(false);
+    setShowExpert(false);
   };
 
   const showWizardApp = () => {
     setShowTest(false);
     setShowWizard(true);
+    setShowExpert(false);
+  };
+
+  const showExpertApp = () => {
+    setShowTest(false);
+    setShowWizard(false);
+    setShowExpert(true);
+  };
+
+  const handleExpertConfigChange = (config: FluidNCConfig) => {
+    setCompletedConfig(config);
   };
 
   if (showTest) {
@@ -31,6 +46,9 @@ function App() {
         <div style={{ padding: '10px', textAlign: 'center', backgroundColor: '#f0f0f0' }}>
           <button onClick={showWizardApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
             Go to Full Wizard
+          </button>
+          <button onClick={showExpertApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Go to Expert Editor
           </button>
           <span>Steps/mm Calculator Demo</span>
         </div>
@@ -46,9 +64,37 @@ function App() {
           <button onClick={() => setShowTest(true)} style={{ padding: '10px 20px', marginRight: '10px' }}>
             Back to Calculator Demo
           </button>
+          <button onClick={showExpertApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Switch to Expert Editor
+          </button>
           <span>Full Configuration Wizard</span>
         </div>
         <Wizard onConfigurationComplete={handleConfigurationComplete} />
+      </div>
+    );
+  }
+
+  if (showExpert) {
+    const currentConfig = completedConfig || {
+      name: 'New FluidNC Configuration',
+      board: '',
+    };
+    
+    return (
+      <div>
+        <div style={{ padding: '10px', textAlign: 'center', backgroundColor: '#f0f0f0' }}>
+          <button onClick={() => setShowTest(true)} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Back to Calculator Demo
+          </button>
+          <button onClick={showWizardApp} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Switch to Wizard
+          </button>
+          <span>Expert Configuration Editor</span>
+        </div>
+        <ExpertEditor 
+          config={currentConfig}
+          onConfigChange={handleExpertConfigChange}
+        />
       </div>
     );
   }
@@ -65,8 +111,15 @@ function App() {
         <button 
           onClick={startNewConfiguration}
           className="restart-button"
+          style={{ marginRight: '10px' }}
         >
           Create New Configuration
+        </button>
+        <button 
+          onClick={showExpertApp}
+          className="restart-button"
+        >
+          Edit in Expert Mode
         </button>
       </div>
     </main>
