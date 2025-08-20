@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FluidNCConfig, SpindleConfig, validateSpindleConfig } from '@fluidnc-gui/core';
+import { FluidNCConfig, SpindleConfig, SpindleType, validateSpindleConfig, validateSpeedMap } from '@fluidnc-gui/core';
+import { SpeedMapEditor } from '../SpeedMapEditor';
 
 interface SpindleStepProps {
   config: FluidNCConfig;
@@ -37,6 +38,14 @@ export const SpindleStep: React.FC<SpindleStepProps> = ({
         if (!config.spindle.output_pin) {
           newErrors.push('Output pin is required for spindle control');
         }
+
+        // Validate speed map if provided
+        if (config.spindle.speed_map && config.spindle.speed_map.trim() !== '') {
+          const speedMapValidation = validateSpeedMap(config.spindle.speed_map);
+          if (!speedMapValidation.valid) {
+            newErrors.push(`Speed map: ${speedMapValidation.error}`);
+          }
+        }
       }
     }
 
@@ -58,6 +67,7 @@ export const SpindleStep: React.FC<SpindleStepProps> = ({
       // Initialize default spindle config
       onConfigChange({
         spindle: {
+          type: 'PWM',
           pwm_hz: 1000,
           output_pin: '',
           enable_pin: '',
