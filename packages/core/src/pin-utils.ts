@@ -49,6 +49,16 @@ export function extractAllPinAssignments(config: FluidNCConfig): Record<string, 
     addPin(config.io.macro1_pin, 'io.macro1_pin');
     addPin(config.io.macro2_pin, 'io.macro2_pin');
     addPin(config.io.macro3_pin, 'io.macro3_pin');
+    // User digital outputs
+    addPin(config.io.user_output_0_pin, 'io.user_output_0_pin');
+    addPin(config.io.user_output_1_pin, 'io.user_output_1_pin');
+    addPin(config.io.user_output_2_pin, 'io.user_output_2_pin');
+    addPin(config.io.user_output_3_pin, 'io.user_output_3_pin');
+    // User PWM outputs
+    addPin(config.io.user_pwm_0_pin, 'io.user_pwm_0_pin');
+    addPin(config.io.user_pwm_1_pin, 'io.user_pwm_1_pin');
+    addPin(config.io.user_pwm_2_pin, 'io.user_pwm_2_pin');
+    addPin(config.io.user_pwm_3_pin, 'io.user_pwm_3_pin');
   }
 
   // Extract motor pins

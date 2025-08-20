@@ -53,6 +53,55 @@ export const DEFAULT_PRESETS: MachinePreset[] = [
       },
     },
   },
+  {
+    id: 'cnc-with-outputs',
+    name: 'CNC with User Outputs',
+    description: 'CNC configuration with coolant and user-controllable outputs',
+    category: 'mill',
+    author: 'FluidNC GUI',
+    version: '1.0.0',
+    tags: ['cnc', 'outputs', 'coolant'],
+    config: {
+      name: 'CNC with User Outputs',
+      board: 'ESP32',
+      axes: {
+        x: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 5000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+        y: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 5000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+        z: {
+          steps_per_mm: 400,
+          max_rate_mm_per_min: 1000,
+          acceleration_mm_per_sec2: 50,
+          max_travel_mm: 100,
+          soft_limits: true,
+        },
+      },
+      io: {
+        probe_pin: 'gpio.25',
+        flood_pin: 'gpio.26',
+        mist_pin: 'gpio.27',
+        user_output_0_pin: 'gpio.32',
+        user_output_1_pin: 'gpio.33',
+        user_pwm_0_pin: 'gpio.36',
+      },
+      control: {
+        feed_hold_pin: 'gpio.17',
+        cycle_start_pin: 'gpio.16',
+        reset_pin: 'gpio.18',
+      },
+    },
+  },
 ];
 
 export function getPresetById(id: string): MachinePreset | undefined {

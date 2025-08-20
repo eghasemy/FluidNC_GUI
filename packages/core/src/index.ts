@@ -107,6 +107,16 @@ export interface IOConfig {
   macro1_pin?: string;
   macro2_pin?: string;
   macro3_pin?: string;
+  // User digital outputs (controlled via M62-M65 commands)
+  user_output_0_pin?: string;
+  user_output_1_pin?: string;
+  user_output_2_pin?: string;
+  user_output_3_pin?: string;
+  // User PWM outputs (controlled via M67-M68 commands)
+  user_pwm_0_pin?: string;
+  user_pwm_1_pin?: string;
+  user_pwm_2_pin?: string;
+  user_pwm_3_pin?: string;
   [key: string]: unknown;
 }
 
@@ -280,6 +290,16 @@ export const IOConfigSchema = z.object({
   macro1_pin: z.string().optional(),
   macro2_pin: z.string().optional(),
   macro3_pin: z.string().optional(),
+  // User digital outputs (controlled via M62-M65 commands)
+  user_output_0_pin: z.string().optional(),
+  user_output_1_pin: z.string().optional(),
+  user_output_2_pin: z.string().optional(),
+  user_output_3_pin: z.string().optional(),
+  // User PWM outputs (controlled via M67-M68 commands)
+  user_pwm_0_pin: z.string().optional(),
+  user_pwm_1_pin: z.string().optional(),
+  user_pwm_2_pin: z.string().optional(),
+  user_pwm_3_pin: z.string().optional(),
 }).catchall(z.unknown());
 
 export const UARTChannelConfigSchema = z.object({
