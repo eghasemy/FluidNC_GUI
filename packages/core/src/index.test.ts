@@ -16,6 +16,8 @@ import {
   validateAxisConfig,
   validateSpindleConfig,
   DEFAULT_CONFIG,
+  toYAML,
+  fromYAML,
 } from './index';
 
 describe('TMCConfigSchema', () => {
@@ -646,5 +648,296 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     const result = validateFluidNCConfig(deepConfig);
     expect(result.success).toBe(true);
+  });
+});
+
+describe('YAML Converters', () => {
+  describe('toYAML', () => {
+    it('should convert configuration to YAML string', () => {
+      const config = {
+        name: 'Test Machine',
+        board: 'ESP32',
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+          },
+        },
+      };
+
+      const yamlString = toYAML(config);
+      expect(typeof yamlString).toBe('string');
+      expect(yamlString).toContain('name: Test Machine');
+      expect(yamlString).toContain('board: ESP32');
+      expect(yamlString).toContain('steps_per_mm: 80');
+    });
+
+    it('should preserve unknown keys in YAML output', () => {
+      const configWithUnknown = {
+        name: 'Test Machine',
+        customProperty: 'custom value',
+        someNestedUnknown: {
+          unknownField: 123,
+          anotherField: true,
+        },
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            customAxisProperty: 'axis custom',
+            motor0: {
+              step_pin: 'gpio.1',
+              customMotorProperty: 'motor custom',
+            },
+          },
+        },
+      };
+
+      const yamlString = toYAML(configWithUnknown);
+      expect(yamlString).toContain('customProperty: custom value');
+      expect(yamlString).toContain('unknownField: 123');
+      expect(yamlString).toContain('customAxisProperty: axis custom');
+      expect(yamlString).toContain('customMotorProperty: motor custom');
+    });
+  });
+
+  describe('fromYAML', () => {
+    it('should parse valid YAML to configuration object', () => {
+      const yamlString = `
+name: Test Machine
+board: ESP32
+axes:
+  x:
+    steps_per_mm: 80
+    max_rate_mm_per_min: 5000
+      `;
+
+      const result = fromYAML(yamlString);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.name).toBe('Test Machine');
+        expect(result.data.board).toBe('ESP32');
+        expect(result.data.axes?.x?.steps_per_mm).toBe(80);
+      }
+    });
+
+    it('should preserve unknown keys when parsing YAML', () => {
+      const yamlString = `
+name: Test Machine
+customProperty: custom value
+someNestedUnknown:
+  unknownField: 123
+  anotherField: true
+axes:
+  x:
+    steps_per_mm: 80
+    customAxisProperty: axis custom
+    motor0:
+      step_pin: gpio.1
+      customMotorProperty: motor custom
+      `;
+
+      const result = fromYAML(yamlString);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.name).toBe('Test Machine');
+        expect(result.data.customProperty).toBe('custom value');
+        expect(result.data.someNestedUnknown).toEqual({
+          unknownField: 123,
+          anotherField: true,
+        });
+        expect(result.data.axes?.x?.customAxisProperty).toBe('axis custom');
+        expect(result.data.axes?.x?.motor0?.customMotorProperty).toBe('motor custom');
+      }
+    });
+
+    it('should return error for invalid YAML', () => {
+      const invalidYaml = `
+name: Test Machine
+board: ESP32
+  invalid: yaml: structure:
+    `;
+
+      const result = fromYAML(invalidYaml);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.errors.issues.length).toBeGreaterThan(0);
+        expect(result.errors.issues[0].message).toContain('YAML parsing error');
+      }
+    });
+
+    it('should return error for YAML that fails validation', () => {
+      const invalidConfig = `
+name: Test Machine
+axes:
+  x:
+    steps_per_mm: -80
+      `;
+
+      const result = fromYAML(invalidConfig);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.errors.issues.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('Round-trip conversion with unknown keys', () => {
+    it('should maintain unknown keys through complete round-trip', () => {
+      const originalConfig = {
+        name: 'Round-trip Test',
+        board: 'ESP32',
+        customProperty: 'preserved value',
+        complexUnknown: {
+          nested: {
+            deeply: 'nested value',
+            array: [1, 2, 3],
+            boolean: true,
+          },
+          number: 42,
+        },
+        axes: {
+          x: {
+            steps_per_mm: 80,
+            max_rate_mm_per_min: 5000,
+            customAxisProperty: 'axis preserved',
+            motor0: {
+              step_pin: 'gpio.1',
+              direction_pin: 'gpio.2',
+              customMotorProperty: 'motor preserved',
+              tmc_2130: {
+                cs_pin: 'gpio.3',
+                run_amps: 1.0,
+                customTMCProperty: 'tmc preserved',
+              },
+            },
+            homing: {
+              cycle: 1,
+              positive_direction: false,
+              customHomingProperty: 'homing preserved',
+            },
+          },
+          y: {
+            steps_per_mm: 80,
+            customYAxisProperty: 'y-axis preserved',
+          },
+        },
+        homing: {
+          cycle: [1, 2],
+          allow_single_axis: true,
+          customGlobalHomingProperty: 'global homing preserved',
+        },
+        spindle: {
+          pwm_hz: 1000,
+          output_pin: 'gpio.10',
+          customSpindleProperty: 'spindle preserved',
+        },
+        io: {
+          probe_pin: 'gpio.11',
+          customIOProperty: 'io preserved',
+        },
+        uart: {
+          uart0: {
+            txd_pin: 'gpio.12',
+            rxd_pin: 'gpio.13',
+            customUARTProperty: 'uart preserved',
+          },
+          customUARTConfigProperty: 'uart config preserved',
+        },
+        macros: {
+          macro0: 'G28',
+          customMacroProperty: 'macro preserved',
+        },
+        control: {
+          reset_pin: 'gpio.14',
+          customControlProperty: 'control preserved',
+        },
+      };
+
+      // Step 1: Convert to YAML
+      const yamlString = toYAML(originalConfig);
+      expect(typeof yamlString).toBe('string');
+
+      // Step 2: Convert back from YAML
+      const result = fromYAML(yamlString);
+      expect(result.success).toBe(true);
+
+      if (result.success) {
+        const roundTripConfig = result.data;
+
+        // Verify all standard properties are preserved
+        expect(roundTripConfig.name).toBe(originalConfig.name);
+        expect(roundTripConfig.board).toBe(originalConfig.board);
+        expect(roundTripConfig.axes?.x?.steps_per_mm).toBe(originalConfig.axes.x.steps_per_mm);
+
+        // Verify unknown keys at root level are preserved
+        expect(roundTripConfig.customProperty).toBe(originalConfig.customProperty);
+        expect(roundTripConfig.complexUnknown).toEqual(originalConfig.complexUnknown);
+
+        // Verify unknown keys in nested structures are preserved
+        expect(roundTripConfig.axes?.x?.customAxisProperty).toBe(originalConfig.axes.x.customAxisProperty);
+        expect(roundTripConfig.axes?.x?.motor0?.customMotorProperty).toBe(originalConfig.axes.x.motor0.customMotorProperty);
+        expect(roundTripConfig.axes?.x?.motor0?.tmc_2130?.customTMCProperty).toBe(originalConfig.axes.x.motor0.tmc_2130.customTMCProperty);
+        expect(roundTripConfig.axes?.x?.homing?.customHomingProperty).toBe(originalConfig.axes.x.homing.customHomingProperty);
+        expect(roundTripConfig.axes?.y?.customYAxisProperty).toBe(originalConfig.axes.y.customYAxisProperty);
+
+        // Verify unknown keys in other sections are preserved
+        expect(roundTripConfig.homing?.customGlobalHomingProperty).toBe(originalConfig.homing.customGlobalHomingProperty);
+        expect(roundTripConfig.spindle?.customSpindleProperty).toBe(originalConfig.spindle.customSpindleProperty);
+        expect(roundTripConfig.io?.customIOProperty).toBe(originalConfig.io.customIOProperty);
+        expect(roundTripConfig.uart?.uart0?.customUARTProperty).toBe(originalConfig.uart.uart0.customUARTProperty);
+        expect(roundTripConfig.uart?.customUARTConfigProperty).toBe(originalConfig.uart.customUARTConfigProperty);
+        expect(roundTripConfig.macros?.customMacroProperty).toBe(originalConfig.macros.customMacroProperty);
+        expect(roundTripConfig.control?.customControlProperty).toBe(originalConfig.control.customControlProperty);
+      }
+    });
+
+    it('should handle edge cases in round-trip conversion', () => {
+      const edgeCaseConfig = {
+        name: 'Edge Case Test',
+        // Test various data types as unknown properties
+        stringProp: 'string value',
+        numberProp: 42.5,
+        booleanProp: false,
+        nullProp: null,
+        arrayProp: ['item1', 'item2', { nested: 'in array' }],
+        objectProp: {
+          level1: {
+            level2: {
+              deepValue: 'very deep',
+            },
+          },
+        },
+        emptyObjectProp: {},
+        emptyArrayProp: [],
+        // Test with actual FluidNC properties mixed in
+        axes: {
+          customAxis: {
+            steps_per_mm: 100,
+            // Unknown properties mixed with known ones
+            weirdProperty: { complex: true, value: [1, 2, 3] },
+          },
+        },
+      };
+
+      // Round-trip conversion
+      const yamlString = toYAML(edgeCaseConfig);
+      const result = fromYAML(yamlString);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const roundTripConfig = result.data;
+
+        // Verify all edge case properties are preserved
+        expect(roundTripConfig.stringProp).toBe(edgeCaseConfig.stringProp);
+        expect(roundTripConfig.numberProp).toBe(edgeCaseConfig.numberProp);
+        expect(roundTripConfig.booleanProp).toBe(edgeCaseConfig.booleanProp);
+        expect(roundTripConfig.nullProp).toBe(edgeCaseConfig.nullProp);
+        expect(roundTripConfig.arrayProp).toEqual(edgeCaseConfig.arrayProp);
+        expect(roundTripConfig.objectProp).toEqual(edgeCaseConfig.objectProp);
+        expect(roundTripConfig.emptyObjectProp).toEqual(edgeCaseConfig.emptyObjectProp);
+        expect(roundTripConfig.emptyArrayProp).toEqual(edgeCaseConfig.emptyArrayProp);
+        expect(roundTripConfig.axes?.customAxis?.weirdProperty).toEqual(edgeCaseConfig.axes.customAxis.weirdProperty);
+      }
+    });
   });
 });

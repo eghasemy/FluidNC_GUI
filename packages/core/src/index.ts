@@ -1,5 +1,6 @@
 // Core domain models and utilities for FluidNC configuration
 import { z } from 'zod';
+import * as yaml from 'js-yaml';
 
 // =============================================================================
 // Core Interfaces
@@ -309,3 +310,41 @@ export const DEFAULT_CONFIG: FluidNCConfig = {
   name: 'FluidNC Configuration',
   board: '',
 };
+
+// =============================================================================
+// YAML Converters
+// =============================================================================
+
+/**
+ * Converts a FluidNC configuration object to YAML string.
+ * Preserves unknown keys during conversion.
+ */
+export function toYAML(config: z.infer<typeof FluidNCConfigSchema>): string {
+  return yaml.dump(config, {
+    indent: 2,
+    lineWidth: -1,
+    noRefs: true,
+    sortKeys: false,
+  });
+}
+
+/**
+ * Converts a YAML string to FluidNC configuration object.
+ * Preserves unknown keys during conversion and validates the result.
+ */
+export function fromYAML(yamlString: string): { success: true; data: z.infer<typeof FluidNCConfigSchema> } | { success: false; errors: z.ZodError } {
+  try {
+    const parsed = yaml.load(yamlString);
+    return validateFluidNCConfig(parsed);
+  } catch (error) {
+    // Create a ZodError for YAML parsing errors
+    const zodError = new z.ZodError([
+      {
+        code: 'custom',
+        message: `YAML parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        path: [],
+      },
+    ]);
+    return { success: false, errors: zodError };
+  }
+}
