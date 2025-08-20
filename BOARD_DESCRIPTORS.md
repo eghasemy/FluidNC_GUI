@@ -110,6 +110,9 @@ const boardIds = getBoardIds(); // ['esp32', 'esp32-s2', 'esp32-s3', 'esp32-c3']
 - **ESP32-S2**: Single-core with enhanced security and USB OTG
 - **ESP32-S3**: Dual-core with AI acceleration and USB OTG
 - **ESP32-C3**: Cost-effective RISC-V single-core with WiFi and Bluetooth LE
+- **BDRing 6-Pack TMC2209**: 6-axis CNC controller with TMC2209 stepper drivers by Bart Dring
+- **V1 Engineering Jackpot**: CNC controller designed for V1 Engineering machines
+- **PiBot 4.9b Plus**: Advanced CNC controller board with enhanced features
 
 ## Validation
 

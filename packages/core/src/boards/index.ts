@@ -235,6 +235,694 @@ const esp32c3Data = {
   "notes": "ESP32-C3 is a cost-effective RISC-V single-core solution with WiFi and Bluetooth LE. Limited number of GPIO pins compared to other ESP32 variants."
 };
 
+const bdring6xData = {
+  "id": "bdring-6x",
+  "name": "BDRing 6-Pack TMC2209",
+  "description": "6-axis CNC controller board with TMC2209 stepper drivers",
+  "version": "1.0",
+  "manufacturer": "Bart Dring",
+  "capabilities": {
+    "uart_channels": 3,
+    "spi_channels": 4,
+    "i2c_channels": 2,
+    "adc_channels": 18,
+    "dac_channels": 2,
+    "pwm_channels": 16,
+    "touch_pins": 10,
+    "flash_size": "4MB",
+    "ram_size": "520KB",
+    "cpu_frequency": "240MHz",
+    "wifi": true,
+    "bluetooth": true,
+    "ethernet": false,
+    "notes": "6-axis CNC controller with ESP32 and TMC2209 stepper drivers, designed by Bart Dring"
+  },
+  "pins": [
+    {
+      "name": "X_STEP",
+      "gpio": 12,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "X-axis step pin"
+      }
+    },
+    {
+      "name": "X_DIR",
+      "gpio": 14,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "X-axis direction pin"
+      }
+    },
+    {
+      "name": "Y_STEP",
+      "gpio": 27,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Y-axis step pin"
+      }
+    },
+    {
+      "name": "Y_DIR",
+      "gpio": 26,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Y-axis direction pin"
+      }
+    },
+    {
+      "name": "Z_STEP",
+      "gpio": 33,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Z-axis step pin"
+      }
+    },
+    {
+      "name": "Z_DIR",
+      "gpio": 32,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Z-axis direction pin"
+      }
+    },
+    {
+      "name": "A_STEP",
+      "gpio": 15,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "A-axis step pin"
+      }
+    },
+    {
+      "name": "A_DIR",
+      "gpio": 2,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "A-axis direction pin"
+      }
+    },
+    {
+      "name": "B_STEP",
+      "gpio": 0,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "B-axis step pin"
+      }
+    },
+    {
+      "name": "B_DIR",
+      "gpio": 4,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "B-axis direction pin"
+      }
+    },
+    {
+      "name": "C_STEP",
+      "gpio": 16,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "C-axis step pin"
+      }
+    },
+    {
+      "name": "C_DIR",
+      "gpio": 17,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "C-axis direction pin"
+      }
+    },
+    {
+      "name": "SPINDLE_PWM",
+      "gpio": 25,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "Spindle PWM control, DAC output"
+      }
+    },
+    {
+      "name": "SPINDLE_DIR",
+      "gpio": 26,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Spindle direction control"
+      }
+    },
+    {
+      "name": "X_LIMIT",
+      "gpio": 21,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "pullup": true,
+        "notes": "X-axis limit switch input"
+      }
+    },
+    {
+      "name": "Y_LIMIT",
+      "gpio": 22,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "pullup": true,
+        "notes": "Y-axis limit switch input"
+      }
+    },
+    {
+      "name": "Z_LIMIT",
+      "gpio": 23,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "pullup": true,
+        "notes": "Z-axis limit switch input"
+      }
+    }
+  ],
+  "notes": "BDRing 6-Pack is a 6-axis CNC controller designed by Bart Dring. Features TMC2209 stepper drivers with UART control, ESP32 WiFi connectivity, and support for up to 6 stepper motors. Perfect for multi-axis CNC machines and robots."
+};
+
+const v1JackpotData = {
+  "id": "v1-jackpot",
+  "name": "V1 Engineering Jackpot",
+  "description": "CNC controller board designed for V1 Engineering machines",
+  "version": "1.0", 
+  "manufacturer": "V1 Engineering",
+  "capabilities": {
+    "uart_channels": 3,
+    "spi_channels": 4,
+    "i2c_channels": 2,
+    "adc_channels": 18,
+    "dac_channels": 2,
+    "pwm_channels": 16,
+    "touch_pins": 10,
+    "flash_size": "4MB",
+    "ram_size": "520KB",
+    "cpu_frequency": "240MHz",
+    "wifi": true,
+    "bluetooth": true,
+    "ethernet": false,
+    "notes": "ESP32-based CNC controller designed specifically for V1 Engineering machines like MPCNC and LowRider"
+  },
+  "pins": [
+    {
+      "name": "X_STEP",
+      "gpio": 12,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "X-axis step pin"
+      }
+    },
+    {
+      "name": "X_DIR",
+      "gpio": 14,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "X-axis direction pin"
+      }
+    },
+    {
+      "name": "Y_STEP",
+      "gpio": 27,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Y-axis step pin"
+      }
+    },
+    {
+      "name": "Y_DIR",
+      "gpio": 26,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Y-axis direction pin"
+      }
+    },
+    {
+      "name": "Z_STEP",
+      "gpio": 33,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Z-axis step pin"
+      }
+    },
+    {
+      "name": "Z_DIR",
+      "gpio": 32,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Z-axis direction pin"
+      }
+    },
+    {
+      "name": "E0_STEP",
+      "gpio": 15,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "E0-axis step pin (4th axis)"
+      }
+    },
+    {
+      "name": "E0_DIR",
+      "gpio": 2,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "E0-axis direction pin (4th axis)"
+      }
+    },
+    {
+      "name": "E1_STEP",
+      "gpio": 0,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "E1-axis step pin (5th axis)"
+      }
+    },
+    {
+      "name": "E1_DIR",
+      "gpio": 4,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "E1-axis direction pin (5th axis)"
+      }
+    },
+    {
+      "name": "SPINDLE_PWM",
+      "gpio": 25,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "Spindle/Laser PWM control, DAC output"
+      }
+    },
+    {
+      "name": "SPINDLE_DIR",
+      "gpio": 26,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Spindle direction control"
+      }
+    },
+    {
+      "name": "X_LIMIT",
+      "gpio": 21,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "pullup": true,
+        "notes": "X-axis limit/endstop switch"
+      }
+    },
+    {
+      "name": "Y_LIMIT",
+      "gpio": 22,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "pullup": true,
+        "notes": "Y-axis limit/endstop switch"
+      }
+    },
+    {
+      "name": "Z_LIMIT",
+      "gpio": 23,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "pullup": true,
+        "notes": "Z-axis limit/endstop switch"
+      }
+    },
+    {
+      "name": "PROBE",
+      "gpio": 35,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "Touch probe input, input only pin"
+      }
+    }
+  ],
+  "notes": "V1 Engineering Jackpot controller is designed specifically for V1 machines like MPCNC and LowRider CNC. Features integrated stepper drivers, WiFi connectivity, and optimized pin layout for V1 machine wiring."
+};
+
+const pibot49bPlusData = {
+  "id": "pibot-49b-plus",
+  "name": "PiBot 4.9b Plus",
+  "description": "Advanced CNC controller board with enhanced features",
+  "version": "4.9b",
+  "manufacturer": "PiBot",
+  "capabilities": {
+    "uart_channels": 3,
+    "spi_channels": 4,
+    "i2c_channels": 2,
+    "adc_channels": 18,
+    "dac_channels": 2,
+    "pwm_channels": 16,
+    "touch_pins": 10,
+    "flash_size": "4MB",
+    "ram_size": "520KB",
+    "cpu_frequency": "240MHz",
+    "wifi": true,
+    "bluetooth": true,
+    "ethernet": false,
+    "notes": "Advanced ESP32-based CNC controller with enhanced I/O and precision control features"
+  },
+  "pins": [
+    {
+      "name": "X_STEP",
+      "gpio": 2,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "X-axis step pin"
+      }
+    },
+    {
+      "name": "X_DIR",
+      "gpio": 5,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "X-axis direction pin"
+      }
+    },
+    {
+      "name": "Y_STEP",
+      "gpio": 17,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Y-axis step pin"
+      }
+    },
+    {
+      "name": "Y_DIR",
+      "gpio": 16,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Y-axis direction pin"
+      }
+    },
+    {
+      "name": "Z_STEP",
+      "gpio": 14,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Z-axis step pin"
+      }
+    },
+    {
+      "name": "Z_DIR",
+      "gpio": 15,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Z-axis direction pin"
+      }
+    },
+    {
+      "name": "A_STEP",
+      "gpio": 12,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "A-axis step pin (4th axis)"
+      }
+    },
+    {
+      "name": "A_DIR",
+      "gpio": 13,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "A-axis direction pin (4th axis)"
+      }
+    },
+    {
+      "name": "SPINDLE_PWM",
+      "gpio": 25,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "analog": true,
+        "notes": "Spindle PWM control, DAC output"
+      }
+    },
+    {
+      "name": "SPINDLE_ENABLE",
+      "gpio": 4,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Spindle enable/disable control"
+      }
+    },
+    {
+      "name": "SPINDLE_DIR",
+      "gpio": 26,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Spindle direction control"
+      }
+    },
+    {
+      "name": "X_LIMIT",
+      "gpio": 36,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "X-axis limit switch, input only"
+      }
+    },
+    {
+      "name": "Y_LIMIT",
+      "gpio": 39,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "Y-axis limit switch, input only"
+      }
+    },
+    {
+      "name": "Z_LIMIT",
+      "gpio": 34,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "Z-axis limit switch, input only"
+      }
+    },
+    {
+      "name": "PROBE",
+      "gpio": 35,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "analog": true,
+        "notes": "Touch probe input, input only"
+      }
+    },
+    {
+      "name": "COOLANT",
+      "gpio": 27,
+      "capabilities": {
+        "digital": true,
+        "input": true,
+        "output": true,
+        "pullup": true,
+        "pulldown": true,
+        "pwm": true,
+        "notes": "Coolant control output"
+      }
+    }
+  ],
+  "notes": "PiBot 4.9b Plus is an advanced CNC controller featuring precision motor control, extensive I/O options, and enhanced connectivity. Designed for professional CNC applications requiring high precision and reliability."
+};
+
 // Create validated board descriptors
 function createBoardDescriptor(data: unknown): BoardDescriptor {
   const result = loadBoardDescriptorFromObject(data);
@@ -249,6 +937,9 @@ export const ESP32_BOARD: BoardDescriptor = createBoardDescriptor(esp32Data);
 export const ESP32_S2_BOARD: BoardDescriptor = createBoardDescriptor(esp32s2Data);
 export const ESP32_S3_BOARD: BoardDescriptor = createBoardDescriptor(esp32s3Data);
 export const ESP32_C3_BOARD: BoardDescriptor = createBoardDescriptor(esp32c3Data);
+export const BDRING_6X_BOARD: BoardDescriptor = createBoardDescriptor(bdring6xData);
+export const V1_JACKPOT_BOARD: BoardDescriptor = createBoardDescriptor(v1JackpotData);
+export const PIBOT_49B_PLUS_BOARD: BoardDescriptor = createBoardDescriptor(pibot49bPlusData);
 
 // Export collection of all boards
 export const BOARD_DESCRIPTORS: Record<string, BoardDescriptor> = {
@@ -256,6 +947,9 @@ export const BOARD_DESCRIPTORS: Record<string, BoardDescriptor> = {
   'esp32-s2': ESP32_S2_BOARD,
   'esp32-s3': ESP32_S3_BOARD,
   'esp32-c3': ESP32_C3_BOARD,
+  'bdring-6x': BDRING_6X_BOARD,
+  'v1-jackpot': V1_JACKPOT_BOARD,
+  'pibot-49b-plus': PIBOT_49B_PLUS_BOARD,
 };
 
 // Utility functions
