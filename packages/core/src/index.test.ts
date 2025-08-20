@@ -15,9 +15,22 @@ import {
   validateFluidNCConfig,
   validateAxisConfig,
   validateSpindleConfig,
+  validateAxisConfigWithContext,
   DEFAULT_CONFIG,
   toYAML,
   fromYAML,
+  // Steps/MM Calculator functions
+  calculateStepsPerMM,
+  calculateStepsPerMM_Belt,
+  calculateStepsPerMM_Leadscrew,
+  calculateStepsPerMM_RackPinion,
+  // Validation functions
+  validateStepsPerMMConsistency,
+  validateFeedRateCapability,
+  validateAccelerationLimits,
+  validateHomingRates,
+  validateAxisConfiguration,
+  AxisValidationContext,
 } from './index';
 
 describe('TMCConfigSchema', () => {
@@ -938,6 +951,423 @@ axes:
         expect(roundTripConfig.emptyArrayProp).toEqual(edgeCaseConfig.emptyArrayProp);
         expect(roundTripConfig.axes?.customAxis?.weirdProperty).toEqual(edgeCaseConfig.axes.customAxis.weirdProperty);
       }
+    });
+  });
+});
+
+// =============================================================================
+// Steps/MM Calculator Tests
+// =============================================================================
+
+describe('Steps/MM Calculator', () => {
+  describe('calculateStepsPerMM_Belt', () => {
+    it('should calculate steps/mm for GT2 belt drive with default parameters', () => {
+      const result = calculateStepsPerMM_Belt({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        drive_pulley_teeth: 20,
+        belt_pitch_mm: 2,
+      });
+      
+      // Expected: (200 * 16) / (20 * 2) = 3200 / 40 = 80 steps/mm
+      expect(result).toBe(80);
+    });
+
+    it('should calculate steps/mm for GT3 belt drive', () => {
+      const result = calculateStepsPerMM_Belt({
+        motor_steps_per_rev: 200,
+        microsteps: 32,
+        drive_pulley_teeth: 20,
+        belt_pitch_mm: 3,
+      });
+      
+      // Expected: (200 * 32) / (20 * 3) = 6400 / 60 = 106.67 steps/mm
+      expect(result).toBeCloseTo(106.67, 2);
+    });
+
+    it('should handle gear reduction', () => {
+      const result = calculateStepsPerMM_Belt({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        drive_pulley_teeth: 20,
+        belt_pitch_mm: 2,
+        gear_ratio: 2,
+      });
+      
+      // Expected: (200 * 16 * 2) / (20 * 2) = 6400 / 40 = 160 steps/mm
+      expect(result).toBe(160);
+    });
+
+    it('should handle pulley ratio', () => {
+      const result = calculateStepsPerMM_Belt({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        drive_pulley_teeth: 20,
+        driven_pulley_teeth: 40,
+        belt_pitch_mm: 2,
+      });
+      
+      // Expected: (200 * 16) * (20/40) / (20 * 2) = 3200 * 0.5 / 40 = 40 steps/mm
+      // Larger driven pulley means less steps per mm
+      expect(result).toBe(40);
+    });
+  });
+
+  describe('calculateStepsPerMM_Leadscrew', () => {
+    it('should calculate steps/mm for 8mm leadscrew', () => {
+      const result = calculateStepsPerMM_Leadscrew({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        leadscrew_pitch_mm: 8,
+      });
+      
+      // Expected: (200 * 16) / 8 = 3200 / 8 = 400 steps/mm
+      expect(result).toBe(400);
+    });
+
+    it('should calculate steps/mm for 2mm leadscrew', () => {
+      const result = calculateStepsPerMM_Leadscrew({
+        motor_steps_per_rev: 200,
+        microsteps: 32,
+        leadscrew_pitch_mm: 2,
+      });
+      
+      // Expected: (200 * 32) / 2 = 6400 / 2 = 3200 steps/mm
+      expect(result).toBe(3200);
+    });
+
+    it('should handle gear reduction with leadscrew', () => {
+      const result = calculateStepsPerMM_Leadscrew({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        leadscrew_pitch_mm: 8,
+        gear_ratio: 3,
+      });
+      
+      // Expected: (200 * 16 * 3) / 8 = 9600 / 8 = 1200 steps/mm
+      expect(result).toBe(1200);
+    });
+  });
+
+  describe('calculateStepsPerMM_RackPinion', () => {
+    it('should calculate steps/mm for rack and pinion', () => {
+      const result = calculateStepsPerMM_RackPinion({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        pinion_teeth: 20,
+        rack_pitch_mm: 2,
+      });
+      
+      // Expected: (200 * 16) / (20 * 2) = 3200 / 40 = 80 steps/mm
+      expect(result).toBe(80);
+    });
+
+    it('should handle different pinion sizes', () => {
+      const result = calculateStepsPerMM_RackPinion({
+        motor_steps_per_rev: 200,
+        microsteps: 16,
+        pinion_teeth: 16,
+        rack_pitch_mm: 2,
+      });
+      
+      // Expected: (200 * 16) / (16 * 2) = 3200 / 32 = 100 steps/mm
+      expect(result).toBe(100);
+    });
+  });
+
+  describe('calculateStepsPerMM (auto-detect)', () => {
+    it('should detect leadscrew drive', () => {
+      const result = calculateStepsPerMM({
+        leadscrew_pitch_mm: 8,
+        microsteps: 16,
+      });
+      
+      expect(result).toBe(400); // Same as leadscrew calculation
+    });
+
+    it('should detect rack and pinion drive', () => {
+      const result = calculateStepsPerMM({
+        pinion_teeth: 20,
+        rack_pitch_mm: 2,
+        microsteps: 16,
+      });
+      
+      expect(result).toBe(80); // Same as rack/pinion calculation
+    });
+
+    it('should detect belt drive', () => {
+      const result = calculateStepsPerMM({
+        drive_pulley_teeth: 20,
+        belt_pitch_mm: 2,
+        microsteps: 16,
+      });
+      
+      expect(result).toBe(80); // Same as belt calculation
+    });
+
+    it('should default to belt drive when unclear', () => {
+      const result = calculateStepsPerMM({
+        microsteps: 16,
+      });
+      
+      // Should use default belt parameters
+      expect(result).toBe(80);
+    });
+  });
+});
+
+// =============================================================================
+// Cross-field Validation Tests
+// =============================================================================
+
+describe('Cross-field Validation', () => {
+  describe('validateStepsPerMMConsistency', () => {
+    it('should pass validation for reasonable steps/mm', () => {
+      const context: AxisValidationContext = {
+        axis: { steps_per_mm: 80 },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateStepsPerMMConsistency(context);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should fail validation for unreasonably high steps/mm', () => {
+      const context: AxisValidationContext = {
+        axis: { steps_per_mm: 100000 },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateStepsPerMMConsistency(context);
+      expect(result.valid).toBe(false);
+      expect(result.message).toContain('appears inconsistent');
+    });
+
+    it('should fail validation for unreasonably low steps/mm', () => {
+      const context: AxisValidationContext = {
+        axis: { steps_per_mm: 0.1 },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateStepsPerMMConsistency(context);
+      expect(result.valid).toBe(false);
+      expect(result.message).toContain('appears inconsistent');
+    });
+
+    it('should pass validation when data is missing', () => {
+      const context: AxisValidationContext = {
+        axis: {},
+      };
+      
+      const result = validateStepsPerMMConsistency(context);
+      expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('validateFeedRateCapability', () => {
+    it('should pass validation for achievable feed rates', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 6000, // 8000 steps/sec
+        },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateFeedRateCapability(context);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should fail validation for excessively high feed rates', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          steps_per_mm: 400,
+          max_rate_mm_per_min: 30000, // 200,000 steps/sec - way too high
+        },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateFeedRateCapability(context);
+      expect(result.valid).toBe(false);
+      expect(result.message).toContain('exceeds typical stepper limit');
+    });
+
+    it('should pass validation when data is missing', () => {
+      const context: AxisValidationContext = {
+        axis: { steps_per_mm: 80 },
+      };
+      
+      const result = validateFeedRateCapability(context);
+      expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('validateAccelerationLimits', () => {
+    it('should pass validation for reasonable acceleration', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          steps_per_mm: 80,
+          acceleration_mm_per_sec2: 100, // 8000 steps/sec²
+        },
+      };
+      
+      const result = validateAccelerationLimits(context);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should fail validation for excessive acceleration', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          steps_per_mm: 400,
+          acceleration_mm_per_sec2: 1000, // 400,000 steps/sec² - too high
+        },
+      };
+      
+      const result = validateAccelerationLimits(context);
+      expect(result.valid).toBe(false);
+      expect(result.message).toContain('may be too high');
+    });
+  });
+
+  describe('validateHomingRates', () => {
+    it('should pass validation for reasonable homing rates', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          max_rate_mm_per_min: 6000,
+          homing: {
+            feed_mm_per_min: 1000,
+            seek_mm_per_min: 3000,
+          },
+        },
+      };
+      
+      const result = validateHomingRates(context);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should fail validation when homing feed exceeds max rate', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          max_rate_mm_per_min: 6000,
+          homing: {
+            feed_mm_per_min: 8000, // Exceeds max rate
+          },
+        },
+      };
+      
+      const result = validateHomingRates(context);
+      expect(result.valid).toBe(false);
+      expect(result.message).toContain('exceeds axis max_rate_mm_per_min');
+    });
+
+    it('should fail validation when homing seek exceeds max rate', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          max_rate_mm_per_min: 6000,
+          homing: {
+            seek_mm_per_min: 8000, // Exceeds max rate
+          },
+        },
+      };
+      
+      const result = validateHomingRates(context);
+      expect(result.valid).toBe(false);
+      expect(result.message).toContain('exceeds axis max_rate_mm_per_min');
+    });
+  });
+
+  describe('validateAxisConfiguration', () => {
+    it('should pass comprehensive validation for good config', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 6000,
+          acceleration_mm_per_sec2: 100,
+          homing: {
+            feed_mm_per_min: 1000,
+            seek_mm_per_min: 3000,
+          },
+        },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateAxisConfiguration(context);
+      expect(result.valid).toBe(true);
+      expect(result.messages).toHaveLength(0);
+    });
+
+    it('should fail comprehensive validation with multiple issues', () => {
+      const context: AxisValidationContext = {
+        axis: { 
+          steps_per_mm: 100000, // Too high
+          max_rate_mm_per_min: 6000,
+          acceleration_mm_per_sec2: 10000, // Too high
+          homing: {
+            feed_mm_per_min: 8000, // Exceeds max rate
+          },
+        },
+        tmcConfig: { microsteps: 16 },
+      };
+      
+      const result = validateAxisConfiguration(context);
+      expect(result.valid).toBe(false);
+      expect(result.messages.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('validateAxisConfigWithContext', () => {
+    it('should pass validation for complete valid configuration', () => {
+      const axisConfig = {
+        steps_per_mm: 80,
+        max_rate_mm_per_min: 6000,
+        acceleration_mm_per_sec2: 100,
+        homing: {
+          feed_mm_per_min: 1000,
+          seek_mm_per_min: 3000,
+          cycle: 1,
+        },
+      };
+      
+      const motorConfig = {
+        step_pin: 'gpio.1',
+        direction_pin: 'gpio.2',
+        tmc_2130: {
+          microsteps: 16,
+          run_amps: 1.0,
+        },
+      };
+      
+      const result = validateAxisConfigWithContext(axisConfig, motorConfig);
+      expect(result.success).toBe(true);
+      expect(result.validationMessages).toHaveLength(0);
+    });
+
+    it('should detect cross-field validation issues', () => {
+      const axisConfig = {
+        steps_per_mm: 100000, // Unreasonable value
+        max_rate_mm_per_min: 6000,
+        homing: {
+          feed_mm_per_min: 8000, // Exceeds max rate
+        },
+      };
+      
+      const tmcConfig = {
+        microsteps: 16,
+      };
+      
+      const result = validateAxisConfigWithContext(axisConfig, undefined, tmcConfig);
+      expect(result.success).toBe(false);
+      expect(result.validationMessages?.length).toBeGreaterThan(0);
+    });
+
+    it('should handle schema validation failures', () => {
+      const invalidAxisConfig = {
+        steps_per_mm: -80, // Negative value should fail schema validation
+      };
+      
+      const result = validateAxisConfigWithContext(invalidAxisConfig);
+      expect(result.success).toBe(false);
+      expect(result.errors).toBeDefined();
     });
   });
 });
