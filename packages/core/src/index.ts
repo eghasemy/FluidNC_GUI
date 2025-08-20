@@ -604,3 +604,9 @@ export function fromYAML(yamlString: string): { success: true; data: z.infer<typ
     return { success: false, errors: zodError };
   }
 }
+
+// =============================================================================
+// Configuration Diff Utilities
+// =============================================================================
+
+export * from './diff';
