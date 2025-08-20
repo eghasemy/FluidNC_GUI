@@ -1,6 +1,6 @@
 {
   "name": "@fluidnc-gui/presets",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Machine and board presets for FluidNC configuration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,10 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "presets"],
+  "files": [
+    "dist",
+    "presets"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -29,5 +32,10 @@
   "dependencies": {
     "@fluidnc-gui/core": "workspace:*"
   },
-  "keywords": ["fluidnc", "cnc", "presets", "configuration"]
+  "keywords": [
+    "fluidnc",
+    "cnc",
+    "presets",
+    "configuration"
+  ]
 }
