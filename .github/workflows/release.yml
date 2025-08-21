@@ -23,6 +23,7 @@ jobs:
 
       - name: Get version
         id: get-version
+        shell: bash
         run: |
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
