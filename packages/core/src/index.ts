@@ -1,6 +1,7 @@
 // Core domain models and utilities for FluidNC configuration
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
+import { transformLegacyConfig, generateUserFriendlyErrors, ImportResult } from './legacy-mapper';
 
 // =============================================================================
 // Core Interfaces
@@ -856,6 +857,64 @@ export function fromYAML(yamlString: string): { success: true; data: z.infer<typ
   }
 }
 
+/**
+ * Enhanced YAML import with legacy configuration support and detailed feedback.
+ * Provides mapping hints and suggestions for common configuration issues.
+ */
+export function fromYAMLWithLegacySupport(yamlString: string): ImportResult {
+  try {
+    // Parse YAML
+    const parsed = yaml.load(yamlString);
+    
+    // Transform legacy configuration patterns
+    const legacyResult = transformLegacyConfig(parsed);
+    
+    // Validate the transformed configuration
+    const validation = validateFluidNCConfig(legacyResult.data);
+    
+    if (validation.success) {
+      return {
+        success: true,
+        data: validation.data,
+        mappings: legacyResult.mappings,
+        suggestions: legacyResult.suggestions,
+        errors: null
+      };
+    } else {
+      // Generate user-friendly error messages
+      const friendlyErrors = generateUserFriendlyErrors(validation.errors);
+      
+      return {
+        success: false,
+        data: legacyResult.data,
+        mappings: legacyResult.mappings,
+        suggestions: [...legacyResult.suggestions, ...friendlyErrors],
+        errors: validation.errors
+      };
+    }
+  } catch (error) {
+    // Handle YAML parsing errors
+    const zodError = new z.ZodError([
+      {
+        code: 'custom',
+        message: `YAML parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        path: [],
+      },
+    ]);
+    
+    return {
+      success: false,
+      mappings: [],
+      suggestions: [{
+        type: 'error',
+        message: `Failed to parse YAML: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        suggestion: 'Check for YAML syntax errors like indentation, quotes, or special characters.'
+      }],
+      errors: zodError
+    };
+  }
+}
+
 // =============================================================================
 // Board Descriptor Validation and Loading
 // =============================================================================
@@ -906,3 +965,9 @@ export * from './pin-utils';
 // =============================================================================
 
 export * from './boards';
+
+// =============================================================================
+// Legacy Configuration Support
+// =============================================================================
+
+export * from './legacy-mapper';
