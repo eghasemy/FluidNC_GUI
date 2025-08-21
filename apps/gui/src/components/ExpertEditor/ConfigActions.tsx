@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { FluidNCConfig } from '@fluidnc-gui/core';
+import { FluidNCConfig, ImportResult } from '@fluidnc-gui/core';
 // import { DEFAULT_PRESETS, getPresetsByCategory } from '@fluidnc-gui/presets';
 import { YamlDiffViewer } from './YamlDiffViewer';
+import { ImportDialog } from '../ImportDialog';
 
 // Import yaml from js-yaml (types should be available via @types/js-yaml)
-import { dump, load } from 'js-yaml';
+import { dump } from 'js-yaml';
 
 // Temporary inline presets for testing until module resolution is fixed
 const INLINE_PRESETS = [
@@ -187,6 +188,7 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
 }) => {
   const [showDiffViewer, setShowDiffViewer] = useState(false);
   const [baselineConfig, setBaselineConfig] = useState<FluidNCConfig | null>(null);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   
   const handleSaveBaseline = () => {
     setBaselineConfig({ ...config });
@@ -222,21 +224,20 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
     }
   };
 
-  const handleImportYaml = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleImportYaml = () => {
+    setShowImportDialog(true);
+  };
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const yamlString = e.target?.result as string;
-        const parsedConfig = load(yamlString) as FluidNCConfig;
-        onConfigChange(parsedConfig);
-      } catch (error) {
-        alert('Failed to import configuration: ' + error);
-      }
-    };
-    reader.readAsText(file);
+  const handleImportSuccess = (importedConfig: FluidNCConfig, result: ImportResult) => {
+    onConfigChange(importedConfig);
+    
+    // Show a success message with transformation details
+    if (result.mappings.length > 0) {
+      console.log('Legacy transformations applied:', result.mappings);
+    }
+    if (result.suggestions.length > 0) {
+      console.log('Import suggestions:', result.suggestions);
+    }
   };
 
   const handleExportJson = () => {
@@ -402,15 +403,9 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
             <button onClick={handleExportJson} className="action-btn export">
               Export JSON
             </button>
-            <label className="action-btn import">
+            <button onClick={handleImportYaml} className="action-btn import">
               Import YAML
-              <input
-                type="file"
-                accept=".yaml,.yml"
-                onChange={handleImportYaml}
-                style={{ display: 'none' }}
-              />
-            </label>
+            </button>
           </div>
         </div>
         
@@ -439,6 +434,12 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
           title="Configuration Changes"
         />
       )}
+      
+      <ImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onImportSuccess={handleImportSuccess}
+      />
     </>
   );
 };

@@ -1,0 +1,68 @@
+# Example Legacy FluidNC Configuration
+# This demonstrates various legacy patterns that the import system can transform
+
+name: Legacy CNC Router
+# Note: No board specified - system will suggest adding one
+
+# Legacy flat axis structure (should be converted to nested axes.x, axes.y, axes.z)
+x:
+  steps_per_mm: 80
+  max_rate_mm_per_min: 5000
+  acceleration_mm_per_sec2: 500
+  max_travel_mm: 300
+  soft_limits: true
+  
+  # Legacy motor pins (should be moved to motor0 configuration)
+  step_pin: gpio.2
+  direction_pin: gpio.5
+  disable_pin: gpio.13
+  
+  # Legacy TMC driver config (should be moved to motor0.tmc_2209)
+  tmc2209:
+    current_ma: 800
+    microsteps: 16
+    stealthchop: true
+  
+  # Legacy homing config (should be moved to homing sub-object)
+  homing_cycle: 1
+  positive_direction: false
+
+y:
+  steps_per_mm: 80
+  max_rate_mm_per_min: 5000
+  acceleration_mm_per_sec2: 500
+  max_travel_mm: 300
+  soft_limits: true
+  step_pin: gpio.12
+  direction_pin: gpio.14
+  disable_pin: gpio.13
+  tmc2209:
+    current_ma: 800
+    microsteps: 16
+    stealthchop: true
+  homing_cycle: 1
+  positive_direction: false
+
+z:
+  steps_per_mm: 400
+  max_rate_mm_per_min: 1000
+  acceleration_mm_per_sec2: 100
+  max_travel_mm: 100
+  soft_limits: true
+  step_pin: gpio.27
+  direction_pin: gpio.26
+  disable_pin: gpio.13
+  tmc2209:
+    current_ma: 600
+    microsteps: 16
+    stealthchop: true
+  homing_cycle: 2
+  positive_direction: true
+
+# Legacy spindle configuration (should be moved to spindle object)
+pwm_pin: gpio.25
+spindle_enable_pin: gpio.4
+spindle_dir_pin: gpio.16
+
+# This config includes A4988 driver references that will trigger upgrade suggestions
+driver_notes: "Using A4988 stepper drivers - consider upgrading to TMC2209"
