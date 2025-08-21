@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd docs
-          pnpm install
+          pnpm install --no-frozen-lockfile
 
       - name: Build documentation
         run: |
