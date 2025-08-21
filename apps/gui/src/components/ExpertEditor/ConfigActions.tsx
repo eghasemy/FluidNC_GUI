@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { FluidNCConfig, ImportResult } from '@fluidnc-gui/core';
+import { FluidNCConfig, ImportResult, toYAMLWithComments } from '@fluidnc-gui/core';
 // import { DEFAULT_PRESETS, getPresetsByCategory } from '@fluidnc-gui/presets';
 import { YamlDiffViewer } from './YamlDiffViewer';
 import { ImportDialog } from '../ImportDialog';
-
-// Import yaml from js-yaml (types should be available via @types/js-yaml)
-import { dump } from 'js-yaml';
 
 // Temporary inline presets for testing until module resolution is fixed
 const INLINE_PRESETS = [
@@ -204,11 +201,8 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
   };
   const handleExportYaml = () => {
     try {
-      const yamlString = dump(config, {
-        indent: 2,
-        lineWidth: 120,
-        noRefs: true,
-      });
+      // Use the new comment-aware export function
+      const yamlString = toYAMLWithComments(config);
       
       const blob = new Blob([yamlString], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
