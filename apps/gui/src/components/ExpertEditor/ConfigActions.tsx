@@ -1,9 +1,180 @@
 import React, { useState } from 'react';
 import { FluidNCConfig } from '@fluidnc-gui/core';
+// import { DEFAULT_PRESETS, getPresetsByCategory } from '@fluidnc-gui/presets';
 import { YamlDiffViewer } from './YamlDiffViewer';
 
 // Import yaml from js-yaml (types should be available via @types/js-yaml)
 import { dump, load } from 'js-yaml';
+
+// Temporary inline presets for testing until module resolution is fixed
+const INLINE_PRESETS = [
+  {
+    id: 'basic-3axis-router',
+    name: 'Basic 3-Axis Router',
+    description: 'A simple 3-axis router configuration',
+    category: 'router' as const,
+    author: 'FluidNC GUI',
+    version: '1.0.0',
+    tags: ['basic', '3-axis', 'router'],
+    config: {
+      name: 'Basic 3-Axis Router',
+      board: '',
+      axes: {
+        x: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 5000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+        y: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 5000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+        z: {
+          steps_per_mm: 400,
+          max_rate_mm_per_min: 1000,
+          acceleration_mm_per_sec2: 50,
+          max_travel_mm: 100,
+          soft_limits: true,
+        },
+      },
+    },
+  },
+  {
+    id: 'laser-engraver-2axis',
+    name: '2-Axis Laser Engraver',
+    description: 'CO2 laser engraver with 2-axis motion and laser control',
+    category: 'laser' as const,
+    author: 'FluidNC Community',
+    version: '1.0.0',
+    tags: ['laser', '2-axis', 'engraver', 'co2'],
+    config: {
+      name: '2-Axis Laser Engraver',
+      board: 'ESP32',
+      axes: {
+        x: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 8000,
+          acceleration_mm_per_sec2: 200,
+          max_travel_mm: 400,
+          soft_limits: true,
+        },
+        y: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 8000,
+          acceleration_mm_per_sec2: 200,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+      },
+      spindle: {
+        output_pin: 'gpio.25',
+        enable_pin: 'gpio.4',
+        pwm_hz: 5000,
+        off_on_alarm: true,
+      },
+    },
+  },
+  {
+    id: 'plasma-cutter-2axis',
+    name: '2-Axis Plasma Cutter',
+    description: 'Plasma cutting table with 2-axis motion and torch height control',
+    category: 'plasma' as const,
+    author: 'FluidNC Community',
+    version: '1.0.0',
+    tags: ['plasma', '2-axis', 'cutter', 'thc'],
+    config: {
+      name: '2-Axis Plasma Cutter',
+      board: 'ESP32',
+      axes: {
+        x: {
+          steps_per_mm: 40,
+          max_rate_mm_per_min: 6000,
+          acceleration_mm_per_sec2: 150,
+          max_travel_mm: 1200,
+          soft_limits: true,
+        },
+        y: {
+          steps_per_mm: 40,
+          max_rate_mm_per_min: 6000,
+          acceleration_mm_per_sec2: 150,
+          max_travel_mm: 600,
+          soft_limits: true,
+        },
+        z: {
+          steps_per_mm: 400,
+          max_rate_mm_per_min: 2000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 100,
+          soft_limits: true,
+        },
+      },
+      spindle: {
+        output_pin: 'gpio.25',
+        enable_pin: 'gpio.4',
+        off_on_alarm: true,
+      },
+    },
+  },
+  {
+    id: 'rotary-4axis-router',
+    name: '4-Axis Rotary Router',
+    description: '3-axis router with rotary A-axis for cylindrical workpieces',
+    category: 'rotary' as const,
+    author: 'FluidNC Community',
+    version: '1.0.0',
+    tags: ['rotary', '4-axis', 'router', 'cylindrical'],
+    config: {
+      name: '4-Axis Rotary Router',
+      board: 'ESP32',
+      axes: {
+        x: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 5000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+        y: {
+          steps_per_mm: 80,
+          max_rate_mm_per_min: 5000,
+          acceleration_mm_per_sec2: 100,
+          max_travel_mm: 300,
+          soft_limits: true,
+        },
+        z: {
+          steps_per_mm: 400,
+          max_rate_mm_per_min: 1000,
+          acceleration_mm_per_sec2: 50,
+          max_travel_mm: 100,
+          soft_limits: true,
+        },
+        a: {
+          steps_per_mm: 11.11,
+          max_rate_mm_per_min: 3600,
+          acceleration_mm_per_sec2: 200,
+          max_travel_mm: 360,
+          soft_limits: false,
+        },
+      },
+      spindle: {
+        output_pin: 'gpio.25',
+        enable_pin: 'gpio.4',
+        direction_pin: 'gpio.16',
+        pwm_hz: 5000,
+        off_on_alarm: true,
+      },
+    },
+  },
+];
+
+const getPresetsByCategory = (category: string) => {
+  return INLINE_PRESETS.filter(preset => preset.category === category);
+};
 
 export interface ConfigActionsProps {
   config: FluidNCConfig;
@@ -166,9 +337,59 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
     onConfigChange(sampleConfig);
   };
 
+  const handleLoadPreset = (presetId: string) => {
+    const preset = INLINE_PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      onConfigChange(preset.config);
+    }
+  };
+
   return (
     <>
       <div className="config-actions">
+        <div className="action-group">
+          <h4>Presets</h4>
+          <div className="action-buttons">
+            <select 
+              onChange={(e) => e.target.value && handleLoadPreset(e.target.value)}
+              defaultValue=""
+              className="preset-selector"
+            >
+              <option value="">Load Machine Preset...</option>
+              <optgroup label="Router">
+                {getPresetsByCategory('router').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Laser">
+                {getPresetsByCategory('laser').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Plasma">
+                {getPresetsByCategory('plasma').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Rotary">
+                {getPresetsByCategory('rotary').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Mill">
+                {getPresetsByCategory('mill').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Other">
+                {getPresetsByCategory('other').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        
         <div className="action-group">
           <h4>Configuration Management</h4>
           <div className="action-buttons">
