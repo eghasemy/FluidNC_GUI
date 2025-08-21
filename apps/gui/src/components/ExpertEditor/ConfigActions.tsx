@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FluidNCConfig } from '@fluidnc-gui/core';
+import { DEFAULT_PRESETS, getPresetsByCategory } from '@fluidnc-gui/presets';
 import { YamlDiffViewer } from './YamlDiffViewer';
 
 // Import yaml from js-yaml (types should be available via @types/js-yaml)
@@ -166,9 +167,59 @@ export const ConfigActions: React.FC<ConfigActionsProps> = ({
     onConfigChange(sampleConfig);
   };
 
+  const handleLoadPreset = (presetId: string) => {
+    const preset = DEFAULT_PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      onConfigChange(preset.config);
+    }
+  };
+
   return (
     <>
       <div className="config-actions">
+        <div className="action-group">
+          <h4>Presets</h4>
+          <div className="action-buttons">
+            <select 
+              onChange={(e) => e.target.value && handleLoadPreset(e.target.value)}
+              defaultValue=""
+              className="preset-selector"
+            >
+              <option value="">Load Machine Preset...</option>
+              <optgroup label="Router">
+                {getPresetsByCategory('router').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Laser">
+                {getPresetsByCategory('laser').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Plasma">
+                {getPresetsByCategory('plasma').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Rotary">
+                {getPresetsByCategory('rotary').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Mill">
+                {getPresetsByCategory('mill').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Other">
+                {getPresetsByCategory('other').map(preset => (
+                  <option key={preset.id} value={preset.id}>{preset.name}</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        
         <div className="action-group">
           <h4>Configuration Management</h4>
           <div className="action-buttons">

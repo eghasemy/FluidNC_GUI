@@ -29,6 +29,14 @@
   margin-bottom: 20px;
 }
 
+.action-group {
+  margin-bottom: 20px;
+}
+
+.action-group:last-child {
+  margin-bottom: 0;
+}
+
 .action-group h4 {
   margin: 0 0 15px 0;
   color: #333;
@@ -39,6 +47,23 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.preset-selector {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.preset-selector:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .action-btn {
