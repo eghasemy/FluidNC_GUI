@@ -52,11 +52,11 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm run --filter @fluidnc-gui/gui dev',
+    command: 'npx vite dev --port 1420 --host',
     url: 'http://localhost:1420',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true, // Always reuse existing server
     timeout: 120 * 1000, // 2 minutes
-    cwd: '.',
+    cwd: './apps/gui',
   },
 
   /* Global test timeout */
