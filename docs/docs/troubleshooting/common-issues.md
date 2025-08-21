@@ -41,6 +41,10 @@ Calculate correct steps per mm:
    - Actual movement: 125mm
    - New setting: 80 × (100/125) = 64 steps/mm
 
+![FluidNC Console Interface](/img/screenshots/console-interface.png)
+
+Use the FluidNC console to send test commands and monitor machine responses during calibration.
+
 #### Common Values
 | Drive Type | Typical Steps/mm |
 |------------|------------------|

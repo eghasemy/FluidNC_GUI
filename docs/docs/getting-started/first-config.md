@@ -16,6 +16,8 @@ A basic 3-axis CNC router configuration with:
 
 ## Step 1: Start the Wizard (30 seconds)
 
+![Getting Started](/img/screenshots/docs-intro-page.png)
+
 1. **Open FluidNC GUI** in your browser
 2. **Click "Start Wizard"** on the main page
 3. **Enter basic information**:
@@ -33,6 +35,8 @@ A basic 3-axis CNC router configuration with:
 3. **Units**: Select `"mm"` (or inches if preferred)
 
 ## Step 3: Motor Configuration (3 minutes)
+
+![Motor Configuration with Pin Validation](/img/screenshots/wizard-interface.png)
 
 For each axis (X, Y, Z):
 

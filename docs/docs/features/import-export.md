@@ -58,6 +58,10 @@ axes:
 - **Validate before export** to catch errors
 - **Custom filename** generation
 
+![Export Interface](/img/screenshots/expert-editor-interface.png)
+
+The export functionality is accessible from the Expert Editor toolbar with validation status clearly indicated.
+
 ## Import Features
 
 ### Modern Configuration Import
