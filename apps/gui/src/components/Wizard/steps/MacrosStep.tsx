@@ -36,25 +36,22 @@ export const MacrosStep: React.FC<MacrosStepProps> = ({
   const handleMacroChange = (macroKey: keyof MacrosConfig, value: string) => {
     const currentMacros = config.macros || {};
     
-    const updatedMacros = {
-      ...currentMacros,
-      [macroKey]: value === '' ? undefined : value,
-    };
+    const updatedMacros: MacrosConfig = { ...currentMacros };
     
-    // Remove undefined values to keep config clean
-    Object.keys(updatedMacros).forEach(key => {
-      if (updatedMacros[key as keyof MacrosConfig] === undefined) {
-        delete updatedMacros[key as keyof MacrosConfig];
-      }
-    });
+    if (value === '') {
+      delete updatedMacros[macroKey];
+    } else {
+      updatedMacros[macroKey] = value;
+    }
     
     onConfigChange({ 
-      macros: Object.keys(updatedMacros).length > 0 ? updatedMacros : undefined 
+      ...(Object.keys(updatedMacros).length > 0 ? { macros: updatedMacros } : {})
     });
   };
 
   const renderMacroEditor = (macroKey: keyof MacrosConfig, title: string, description: string) => {
-    const value = config.macros?.[macroKey] || '';
+    const rawValue = config.macros?.[macroKey];
+    const value = typeof rawValue === 'string' ? rawValue : '';
     
     return (
       <div key={macroKey} className="form-group macro-editor">

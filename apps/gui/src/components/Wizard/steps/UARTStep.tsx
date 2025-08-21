@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FluidNCConfig, UARTConfig, UARTChannelConfig } from '@fluidnc-gui/core';
+import { FluidNCConfig, UARTChannelConfig } from '@fluidnc-gui/core';
 import { PinInput } from '../../PinInput';
 import { usePinManager } from '../../../hooks/usePinManager';
 
@@ -77,32 +77,23 @@ export const UARTStep: React.FC<UARTStepProps> = ({
     const currentUart = config.uart || {};
     const currentChannel = currentUart[channelKey] || {};
     
-    const updatedChannel = {
-      ...currentChannel,
-      [field]: value === '' ? undefined : value,
-    };
+    const updatedChannel: UARTChannelConfig = { ...currentChannel };
     
-    // Remove undefined values to keep config clean
-    Object.keys(updatedChannel).forEach(key => {
-      if (updatedChannel[key as keyof UARTChannelConfig] === undefined) {
-        delete updatedChannel[key as keyof UARTChannelConfig];
-      }
-    });
+    if (value === '') {
+      delete updatedChannel[field];
+    } else {
+      updatedChannel[field] = value;
+    }
     
-    const updatedUart = {
-      ...currentUart,
-      [channelKey]: Object.keys(updatedChannel).length > 0 ? updatedChannel : undefined,
-    };
-    
-    // Remove undefined channels
-    Object.keys(updatedUart).forEach(key => {
-      if (updatedUart[key] === undefined) {
-        delete updatedUart[key];
-      }
-    });
+    const updatedUart = { ...currentUart };
+    if (Object.keys(updatedChannel).length > 0) {
+      updatedUart[channelKey] = updatedChannel;
+    } else {
+      delete updatedUart[channelKey];
+    }
     
     onConfigChange({ 
-      uart: Object.keys(updatedUart).length > 0 ? updatedUart : undefined 
+      ...(Object.keys(updatedUart).length > 0 ? { uart: updatedUart } : {})
     });
   };
 
@@ -120,8 +111,8 @@ export const UARTStep: React.FC<UARTStepProps> = ({
               label="TXD Pin"
               value={channel?.txd_pin || ''}
               onChange={(value) => handleUARTConfigChange(channelKey, 'txd_pin', value)}
+              config={config}
               sourceField={`uart.${channelKey}.txd_pin`}
-              pinManager={pinManager}
               placeholder="e.g., gpio.1"
             />
             <small>Transmit data pin</small>
@@ -132,8 +123,8 @@ export const UARTStep: React.FC<UARTStepProps> = ({
               label="RXD Pin"
               value={channel?.rxd_pin || ''}
               onChange={(value) => handleUARTConfigChange(channelKey, 'rxd_pin', value)}
+              config={config}
               sourceField={`uart.${channelKey}.rxd_pin`}
-              pinManager={pinManager}
               placeholder="e.g., gpio.2"
             />
             <small>Receive data pin</small>
@@ -144,8 +135,8 @@ export const UARTStep: React.FC<UARTStepProps> = ({
               label="RTS Pin (Optional)"
               value={channel?.rts_pin || ''}
               onChange={(value) => handleUARTConfigChange(channelKey, 'rts_pin', value)}
+              config={config}
               sourceField={`uart.${channelKey}.rts_pin`}
-              pinManager={pinManager}
               placeholder="e.g., gpio.3"
             />
             <small>Request to send pin (flow control)</small>

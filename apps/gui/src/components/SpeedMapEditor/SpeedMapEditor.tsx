@@ -37,9 +37,12 @@ export const SpeedMapEditor: React.FC<SpeedMapEditorProps> = ({
     }
 
     const newEntries = [...entries];
+    const currentEntry = newEntries[index];
+    if (!currentEntry) return; // Safety check
+    
     newEntries[index] = {
-      ...newEntries[index],
-      [field]: newValue === '' ? 0 : numericValue,
+      rpm: field === 'rpm' ? (newValue === '' ? 0 : numericValue) : currentEntry.rpm,
+      pwm: field === 'pwm' ? (newValue === '' ? 0 : numericValue) : currentEntry.pwm,
     };
 
     setEntries(newEntries);
