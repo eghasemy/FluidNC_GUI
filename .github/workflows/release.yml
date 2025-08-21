@@ -63,77 +63,11 @@ jobs:
           draft: true
           prerelease: false
 
-  build-windows:
-    needs: create-release
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            apps/gui/src-tauri/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build packages
-        run: pnpm run --filter @fluidnc-gui/core build && pnpm run --filter @fluidnc-gui/presets build
-
-      - name: Build Tauri app
-        run: pnpm --filter @fluidnc-gui/gui tauri build
-
-      - name: Find Windows installer
-        id: find-msi
-        shell: bash
-        run: |
-          MSI_FILE=$(find apps/gui/src-tauri/target/release/bundle/msi -name "*.msi" | head -1)
-          echo "MSI_PATH=$MSI_FILE" >> $GITHUB_OUTPUT
-          echo "MSI_NAME=$(basename "$MSI_FILE")" >> $GITHUB_OUTPUT
-
-      - name: Upload Windows installer
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload-url }}
-          asset_path: ${{ steps.find-msi.outputs.MSI_PATH }}
-          asset_name: FluidNC-GUI-Windows-x64.msi
-          asset_content_type: application/x-msi
-
   build-linux:
     needs: create-release
+    defaults:
+      run:
+        shell: pwsh
     runs-on: self-hosted
     steps:
       - name: Checkout
@@ -217,7 +151,7 @@ jobs:
           asset_content_type: application/x-rpm
 
   finalize-release:
-    needs: [create-release, build-windows, build-linux]
+    needs: [create-release, build-linux]
     runs-on: self-hosted
     steps:
       - name: Publish Release
