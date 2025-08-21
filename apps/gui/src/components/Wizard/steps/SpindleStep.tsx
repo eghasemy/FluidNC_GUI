@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FluidNCConfig, SpindleConfig, SpindleType, validateSpindleConfig, validateSpeedMap } from '@fluidnc-gui/core';
-import { SpeedMapEditor } from '../SpeedMapEditor';
+import { SpeedMapEditor } from '../../SpeedMapEditor';
 
 interface SpindleStepProps {
   config: FluidNCConfig;
