@@ -5,7 +5,10 @@
   "description": "A FluidNC Config creation GUI",
   "scripts": {
     "build": "pnpm run -r build",
+    "build:docs": "pnpm run --filter docs build",
     "dev": "pnpm run --filter @fluidnc-gui/gui dev",
+    "dev:docs": "pnpm run --filter docs start",
+    "deploy:docs": "pnpm run --filter docs deploy",
     "lint": "pnpm run -r lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
