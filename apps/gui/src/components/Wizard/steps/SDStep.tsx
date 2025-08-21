@@ -30,9 +30,9 @@ export const SDStep: React.FC<SDStepProps> = ({
     
     // Validate SD card pins
     if (config.sd) {
-      const sdPins: (keyof SDConfig)[] = [
+      const sdPins = [
         'card_detect_pin', 'miso_pin', 'mosi_pin', 'sck_pin', 'cs_pin'
-      ];
+      ] as const;
       
       sdPins.forEach(field => {
         const pin = config.sd?.[field];
@@ -55,20 +55,16 @@ export const SDStep: React.FC<SDStepProps> = ({
   const handleSDConfigChange = (field: keyof SDConfig, value: string) => {
     const currentSD = config.sd || {};
     
-    const updatedSD = {
-      ...currentSD,
-      [field]: value === '' ? undefined : value,
-    };
+    const updatedSD: SDConfig = { ...currentSD };
     
-    // Remove undefined values to keep config clean
-    Object.keys(updatedSD).forEach(key => {
-      if (updatedSD[key as keyof SDConfig] === undefined) {
-        delete updatedSD[key as keyof SDConfig];
-      }
-    });
+    if (value === '') {
+      delete updatedSD[field];
+    } else {
+      updatedSD[field] = value;
+    }
     
     onConfigChange({ 
-      sd: Object.keys(updatedSD).length > 0 ? updatedSD : undefined 
+      ...(Object.keys(updatedSD).length > 0 ? { sd: updatedSD } : {})
     });
   };
 
@@ -89,8 +85,8 @@ export const SDStep: React.FC<SDStepProps> = ({
               label="MISO Pin"
               value={config.sd?.miso_pin || ''}
               onChange={(value) => handleSDConfigChange('miso_pin', value)}
+              config={config}
               sourceField="sd.miso_pin"
-              pinManager={pinManager}
               placeholder="e.g., gpio.19"
             />
             <small>Master In, Slave Out - Data from SD card to controller</small>
@@ -101,8 +97,8 @@ export const SDStep: React.FC<SDStepProps> = ({
               label="MOSI Pin"
               value={config.sd?.mosi_pin || ''}
               onChange={(value) => handleSDConfigChange('mosi_pin', value)}
+              config={config}
               sourceField="sd.mosi_pin"
-              pinManager={pinManager}
               placeholder="e.g., gpio.23"
             />
             <small>Master Out, Slave In - Data from controller to SD card</small>
@@ -113,8 +109,8 @@ export const SDStep: React.FC<SDStepProps> = ({
               label="SCK Pin"
               value={config.sd?.sck_pin || ''}
               onChange={(value) => handleSDConfigChange('sck_pin', value)}
+              config={config}
               sourceField="sd.sck_pin"
-              pinManager={pinManager}
               placeholder="e.g., gpio.18"
             />
             <small>Serial Clock - Clock signal for SPI communication</small>
@@ -125,8 +121,8 @@ export const SDStep: React.FC<SDStepProps> = ({
               label="CS Pin"
               value={config.sd?.cs_pin || ''}
               onChange={(value) => handleSDConfigChange('cs_pin', value)}
+              config={config}
               sourceField="sd.cs_pin"
-              pinManager={pinManager}
               placeholder="e.g., gpio.5"
             />
             <small>Chip Select - Selects the SD card for communication</small>
@@ -137,8 +133,8 @@ export const SDStep: React.FC<SDStepProps> = ({
               label="Card Detect Pin (Optional)"
               value={config.sd?.card_detect_pin || ''}
               onChange={(value) => handleSDConfigChange('card_detect_pin', value)}
+              config={config}
               sourceField="sd.card_detect_pin"
-              pinManager={pinManager}
               placeholder="e.g., gpio.21"
             />
             <small>Detects when SD card is inserted (if your slot has this feature)</small>
