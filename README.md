@@ -13,7 +13,14 @@ A modern web-based configuration tool for [FluidNC](https://github.com/bdring/Fl
 
 ## 🚀 Quick Start
 
-### Online Version (Recommended)
+### Download Desktop App
+Get the native desktop application for the best experience:
+- **[Windows Installer (.msi)](https://github.com/eghasemy/FluidNC_GUI/releases/latest)**
+- **[Linux Package (.deb/.rpm)](https://github.com/eghasemy/FluidNC_GUI/releases/latest)**
+
+See our **[Release Process](docs/RELEASE.md)** for installation instructions.
+
+### Online Version (Alternative)
 Visit **[FluidNC GUI Documentation](https://eghasemy.github.io/FluidNC_GUI/)** for complete guides including:
 
 - **[Getting Started](https://eghasemy.github.io/FluidNC_GUI/docs/getting-started/)** - Complete beginner's guide

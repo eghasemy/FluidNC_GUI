@@ -1,20 +1,20 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "gui",
+  "productName": "FluidNC GUI",
   "version": "0.1.0",
-  "identifier": "com.runner.gui",
+  "identifier": "com.fluidnc.gui",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
+    "beforeBuildCommand": "pnpm build:frontend",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "gui",
-        "width": 800,
-        "height": 600
+        "title": "FluidNC GUI",
+        "width": 1200,
+        "height": 800
       }
     ],
     "security": {
