@@ -96,3 +96,8 @@ src-tauri/target/
 *.dll
 *.so
 *.dylib
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
