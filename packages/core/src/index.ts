@@ -837,6 +837,132 @@ export function toYAML(config: z.infer<typeof FluidNCConfigSchema>): string {
 }
 
 /**
+ * Converts a FluidNC configuration object to YAML string with helpful comments.
+ * Provides educational context and guidance for configuration options.
+ */
+export function toYAMLWithComments(config: z.infer<typeof FluidNCConfigSchema>): string {
+  // Simple comment mapping for key configuration sections
+  const getSimpleComment = (path: string): string | undefined => {
+    const commentMap: Record<string, string> = {
+      'name': 'Configuration name - helps identify this setup',
+      'board': 'Target board type (ESP32, ESP32-S2, ESP32-S3, etc.)',
+      'version': 'FluidNC firmware version this config is designed for',
+      'axes': 'Axis configuration - defines motion system behavior',
+      'axes.x': 'X-axis configuration (typically horizontal left-right movement)',
+      'axes.y': 'Y-axis configuration (typically horizontal front-back movement)',
+      'axes.z': 'Z-axis configuration (typically vertical up-down movement)',
+      'steps_per_mm': 'Steps per millimeter - depends on motor, driver microsteps, and mechanical setup',
+      'max_rate_mm_per_min': 'Maximum speed in mm/min',
+      'acceleration_mm_per_sec2': 'Acceleration in mm/sec² - start conservative and increase gradually',
+      'max_travel_mm': 'Maximum travel distance in mm',
+      'soft_limits': 'Enable software limits (requires homing)',
+      'step_pin': 'Step pulse pin (e.g., gpio.2)',
+      'direction_pin': 'Direction control pin (e.g., gpio.5)',
+      'disable_pin': 'Motor enable/disable pin (e.g., gpio.13)',
+      'motor0': 'Primary motor driver configuration',
+      'motor1': 'Secondary motor driver configuration (dual motor setup)',
+      'homing': 'Homing behavior configuration',
+      'spindle': 'Spindle/laser control configuration',
+      'probe': 'Touch probe configuration',
+      'control': 'Control input pins (feed hold, cycle start, etc.)',
+      'uart': 'UART communication configuration',
+      'sd': 'SD card interface configuration',
+      'macros': 'Custom G-code macros'
+    };
+    
+    // Try exact match first
+    if (commentMap[path]) {
+      return commentMap[path];
+    }
+    
+    // Try partial matches for nested paths
+    const pathParts = path.split('.');
+    const lastPart = pathParts[pathParts.length - 1];
+    if (lastPart) {
+      return commentMap[lastPart];
+    }
+    
+    return undefined;
+  };
+  
+  // Generate base YAML
+  const baseYaml = yaml.dump(config, {
+    indent: 2,
+    lineWidth: -1,
+    noRefs: true,
+    sortKeys: false,
+  });
+
+  // Split into lines for processing
+  const lines = baseYaml.split('\n');
+  const result: string[] = [];
+  
+  // Track current path for context
+  const pathStack: string[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line) {
+      result.push('');
+      continue;
+    }
+    
+    const trimmedLine = line.trim();
+    
+    // Skip empty lines
+    if (!trimmedLine) {
+      result.push(line);
+      continue;
+    }
+    
+    // Calculate indentation level
+    const indent = line.length - line.trimStart().length;
+    const indentLevel = Math.floor(indent / 2);
+    
+    // Adjust path stack based on indentation
+    pathStack.length = indentLevel;
+    
+    // Check if this line defines a key
+    if (trimmedLine.includes(':')) {
+      const keyMatch = trimmedLine.match(/^([^:]+):/);
+      if (keyMatch && keyMatch[1]) {
+        const key = keyMatch[1].trim();
+        const currentPath = [...pathStack, key].join('.');
+        
+        // Get comment for this path
+        const comment = getSimpleComment(currentPath);
+        
+        // Add comment above the line if found and it's a section header
+        if (comment && trimmedLine.endsWith(':')) {
+          const commentIndent = ' '.repeat(indent);
+          result.push(`${commentIndent}# ${comment}`);
+        }
+        
+        // Add the original line
+        result.push(line);
+        
+        // Add to path stack if this is not a leaf value
+        if (trimmedLine.endsWith(':')) {
+          pathStack.push(key);
+        }
+      } else {
+        result.push(line);
+      }
+    } else {
+      result.push(line);
+    }
+  }
+  
+  // Add header comment
+  const headerComment = `# FluidNC Configuration
+# Generated with helpful comments for guidance
+# Visit https://github.com/bdring/FluidNC for documentation
+#`;
+  
+  return headerComment + '\n' + result.join('\n');
+}
+
+/**
  * Converts a YAML string to FluidNC configuration object.
  * Preserves unknown keys during conversion and validates the result.
  */
