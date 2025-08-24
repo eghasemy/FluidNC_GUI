@@ -11,6 +11,8 @@ Getting started with FluidNC GUI is easy - no installation required! It runs dir
 ### Option 1: Online Version (Recommended)
 Visit the live version at: **[https://eghasemy.github.io/FluidNC_GUI/](https://eghasemy.github.io/FluidNC_GUI/)**
 
+![FluidNC GUI Home Page](/img/screenshots/docs-home-page.png)
+
 ✅ **Advantages:**
 - Always up-to-date
 - No setup required

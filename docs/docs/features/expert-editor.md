@@ -48,6 +48,10 @@ The Expert Editor offers:
 2. **Click "Expert Editor"** on the main page
 3. **Start with sample config** or import existing file
 
+![Expert Editor Interface](/img/screenshots/expert-editor-interface.png)
+
+The Expert Editor provides a powerful tree-based interface for complete configuration control.
+
 ### Navigation Basics
 - **Click tree nodes** to select configuration sections
 - **Use + buttons** to add new properties
@@ -55,6 +59,8 @@ The Expert Editor offers:
 - **Expand/collapse** sections with arrow icons
 
 ## Interface Layout
+
+![Expert Editor Layout](/img/screenshots/expert-editor-interface.png)
 
 ### Tree Panel (Left)
 - Hierarchical configuration structure

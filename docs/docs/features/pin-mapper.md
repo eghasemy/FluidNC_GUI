@@ -54,6 +54,10 @@ Understands board-specific limitations:
 
 ## Using the Pin Mapper
 
+![Pin Mapper Interface](/img/screenshots/pin-mapper-interface.png)
+
+The Pin Mapper provides a visual representation of your ESP32 board with real-time pin status and conflict detection.
+
 ### Accessing Pin Mapper
 1. **Open any configuration** in FluidNC GUI
 2. **Navigate to Pin Mapper** from main menu
@@ -64,6 +68,10 @@ Understands board-specific limitations:
 - **Color indicators** show current status
 - **Hover for details** about pin capabilities
 - **Click for assignment** options
+
+![Pin Status Legend](/img/screenshots/pin-mapper-interface.png)
+
+The visual legend helps you quickly understand each pin's current state and availability.
 
 ### Resolving Conflicts
 1. **Identify red pins** indicating conflicts

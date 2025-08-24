@@ -50,6 +50,10 @@ The Wizard mode breaks down the complex process of FluidNC configuration into ma
 3. **Follow the step-by-step process**
 4. **Export your configuration** when complete
 
+![Wizard Mode Interface](/img/screenshots/wizard-interface.png)
+
+The Wizard guides you through each step with clear progress indication and real-time validation.
+
 ## Step Details
 
 ### Machine Information
@@ -68,6 +72,10 @@ The Wizard mode breaks down the complex process of FluidNC configuration into ma
 - Speed and acceleration limits
 - Pin assignments with conflict detection
 - Enable pin configuration
+
+![Pin Conflict Detection](/img/screenshots/wizard-interface.png)
+
+The wizard automatically detects pin conflicts and provides visual feedback to help you resolve them quickly.
 
 ### Advanced Features
 The Wizard also supports advanced features when needed:

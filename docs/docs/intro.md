@@ -16,6 +16,10 @@ FluidNC GUI is a modern web-based configuration tool for [FluidNC](https://githu
 - **📁 Import/Export**: Support for YAML and JSON formats
 - **🔄 Legacy Support**: Import and upgrade old configurations
 
+![FluidNC GUI Overview](/img/screenshots/docs-home-page.png)
+
+The application provides an intuitive interface for creating and managing FluidNC configurations without requiring deep YAML knowledge.
+
 ## Quick Start
 
 New to FluidNC GUI? Start here:
@@ -31,6 +35,18 @@ New to FluidNC GUI? Start here:
 - **Pin Validation**: Prevents pin conflicts before they happen
 - **Board Support**: Built-in support for popular ESP32 boards
 - **Legacy Import**: Seamlessly upgrade older FluidNC configs
+
+### Wizard Mode
+![Wizard Mode](/img/screenshots/wizard-interface.png)
+*Step-by-step configuration with automatic pin conflict detection*
+
+### Expert Editor  
+![Expert Editor](/img/screenshots/expert-editor-interface.png)
+*Advanced tree-based configuration editing with validation*
+
+### Pin Mapper
+![Pin Mapper](/img/screenshots/pin-mapper-interface.png)
+*Visual pin assignment and conflict resolution*
 
 ## Get Help
 
